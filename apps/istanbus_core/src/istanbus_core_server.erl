@@ -6,7 +6,7 @@
 %% API Function Exports
 %% ------------------------------------------------------------------
 
--export([start_link/0]).
+-export([start_link/0, save_snippet/1]).
 
 %% ------------------------------------------------------------------
 %% gen_server Function Exports
@@ -20,7 +20,8 @@
 %% ------------------------------------------------------------------
 
 start_link() ->
-    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+    emongo:add_pool(pool_mongo, "localhost", 27017, "istanbus_2012-02-23", 1),
+    gen_server:start_link({local, ?SERVER}, ?MODULE, [pool_mongo], []).
 
 %% ------------------------------------------------------------------
 %% gen_server Function Definitions
@@ -29,6 +30,12 @@ start_link() ->
 init(Args) ->
     {ok, Args}.
 
+save_snippet(Snippet) ->
+    gen_server:call(?SERVER, {save_snippet, Snippet}, infinity).
+
+handle_call({save_snippet, Snippet}, _From, MongoPool) ->
+    SavedSnippet = istanbus_snippet:save(MongoPool, Snippet),
+    {reply, SavedSnippet, MongoPool};
 handle_call(_Request, _From, State) ->
     {noreply, ok, State}.
 
