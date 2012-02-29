@@ -1,0 +1,2 @@
+127.0.0.1 - - [29/Feb/2012:02:14:03 +0200] "GET / HTTP/1.1" 200 52 "" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:10.0.2) Gecko/20100101 Firefox/10.0.2"
+127.0.0.1 - - [29/Feb/2012:02:14:06 +0200] "GET / HTTP/1.1" 200 52 "" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:10.0.2) Gecko/20100101 Firefox/10.0.2"

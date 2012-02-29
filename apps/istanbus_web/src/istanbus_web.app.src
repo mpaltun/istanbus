@@ -1,0 +1,18 @@
+%%-*- mode: erlang -*-
+{application, istanbus_web,
+ [
+  {description, "istanbus web filan"},
+  {vsn, "0.0.1"},
+  {modules, []},
+  {registered, []},
+  {applications, [
+                  inets,
+                  kernel,
+                  stdlib,
+                  crypto,
+                  mochiweb,
+                  webmachine
+                 ]},
+  {mod, { istanbus_web_app, []}},
+  {env, []}
+ ]}.
