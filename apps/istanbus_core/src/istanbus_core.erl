@@ -1,5 +1,10 @@
+%% @author Mustafa Paltun <mpaltun@gmail.com>
+%% @copyright 2012 Mustafa Paltun
+
+%% @doc istanbus_core init here
+
 -module(istanbus_core).
--author('Mustafa <mpaltun@gmail.com>').
+-author('Mustafa Paltun <mpaltun@gmail.com>').
 -export([start/0, start_link/0, stop/0]).
 
 ensure_started(App) ->
@@ -28,3 +33,4 @@ stop() ->
     Res = application:stop(istanbus_core),
     application:stop(crypto),
     Res.
+

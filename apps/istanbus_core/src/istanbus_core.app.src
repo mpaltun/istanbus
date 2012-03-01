@@ -1,6 +1,6 @@
 {application, istanbus_core,
  [
-  {description, "Core features of istanbus"},
+  {description, "Core of istanbus"},
   {vsn, "0.0.1"},
   {registered, []},
   {applications, [

@@ -24,7 +24,5 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    Server = ?CHILD(istanbus_core_server, worker),
-    Processes = [Server],
-    {ok, { {one_for_one, 5, 10}, Processes} }.
+    {ok, { {one_for_one, 5, 10}, []} }.
 
