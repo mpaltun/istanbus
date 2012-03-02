@@ -19,4 +19,9 @@ to_json(ReqData, Context) ->
     PathInfo = wrq:path_info(ReqData),
     {ok, BusId} = dict:find(key, PathInfo),
     Result = emongo:find(pool_mongo, "bus", [{"_id", BusId}]),
-    {mochijson2:encode(Result),  ReqData, Context}.
+    {mochijson2:encode(get_first(Result)),  ReqData, Context}.
+
+get_first([H | T]) ->
+    H;
+get_first([]) ->
+    {struct, []}.
