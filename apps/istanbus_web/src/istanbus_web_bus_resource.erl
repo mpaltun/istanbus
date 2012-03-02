@@ -16,12 +16,16 @@ content_types_provided(ReqData, Context) ->
    {[{"application/json",to_json}], ReqData, Context}.
 
 to_json(ReqData, Context) ->
-    PathInfo = wrq:path_info(ReqData),
-    {ok, BusId} = dict:find(key, PathInfo),
-    Result = emongo:find(pool_mongo, "bus", [{"_id", BusId}]),
-    {mochijson2:encode(get_first(Result)),  ReqData, Context}.
+    case wrq:path_info(id, ReqData) of
+        undefined ->
+            All = emongo:find(pool_mongo, "bus", [], [{ fields, ["_id"]}]),
+            { mochijson2:encode(All), ReqData, Context };
+        BusId ->
+            Result = emongo:find(pool_mongo, "bus", [{"_id", BusId}]),
+            { mochijson2:encode(get_first(Result)),  ReqData, Context }
+    end.
 
-get_first([H | T]) ->
+get_first([H | _]) ->
     H;
 get_first([]) ->
     {struct, []}.
