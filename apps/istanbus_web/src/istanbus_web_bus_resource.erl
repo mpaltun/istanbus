@@ -18,14 +18,9 @@ content_types_provided(ReqData, Context) ->
 to_json(ReqData, Context) ->
     case wrq:path_info(id, ReqData) of
         undefined ->
-            All = emongo:find(pool_mongo, "bus", [], [{ fields, ["_id"]}]),
+            All = istanbus_core_bus_module:load_all(pool_mongo),
             { mochijson2:encode(All), ReqData, Context };
         BusId ->
-            Result = emongo:find(pool_mongo, "bus", [{"_id", BusId}]),
-            { mochijson2:encode(get_first(Result)),  ReqData, Context }
+            Bus = istanbus_core_bus_module:load_by_id(pool_mongo, BusId),
+            { mochijson2:encode(Bus),  ReqData, Context }
     end.
-
-get_first([H | _]) ->
-    H;
-get_first([]) ->
-    {struct, []}.
