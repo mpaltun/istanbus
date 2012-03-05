@@ -9,7 +9,7 @@
 
 init([]) -> 
     application:start(emongo),
-    emongo:add_pool(pool_mongo, "localhost", 27017, "istanbus_2012-02-23", 1),
+    emongo:add_pool(pool_mongo, "localhost", 27017, "istanbus_2012-03-02", 1),
     {ok, undefined}.
 
 content_types_provided(ReqData, Context) ->
