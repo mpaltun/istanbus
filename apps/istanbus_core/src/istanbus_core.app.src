@@ -5,7 +5,8 @@
   {registered, []},
   {applications, [
                   kernel,
-                  stdlib
+                  stdlib,
+                  emongo
                  ]},
   {mod, { istanbus_core_app, []}},
   {env, []}

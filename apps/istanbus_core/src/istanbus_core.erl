@@ -19,12 +19,15 @@ ensure_started(App) ->
 %% @doc Starts the app for inclusion in a supervisor tree
 start_link() ->
     ensure_started(crypto),
+    ensure_started(emongo),
     istanbus_core_sup:start_link().
 
 %% @spec start() -> ok
 %% @doc Start the csd_core server.
 start() ->
     ensure_started(crypto),
+    ensure_started(emongo),
+    emongo:add_pool(pool_mongo, "localhost", 27017, "istanbus_2012-03-11", 20),
     application:start(istanbus_core).
 
 %% @spec stop() -> ok
@@ -32,5 +35,6 @@ start() ->
 stop() ->
     Res = application:stop(istanbus_core),
     application:stop(crypto),
+    application:stop(emongo),
     Res.
 
