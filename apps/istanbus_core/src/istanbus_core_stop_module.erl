@@ -1,9 +1,11 @@
 -module(istanbus_core_stop_module).
 
--export([load_by_id/1]).
+-export([load_by_id/1, search/1]).
 
-load_by_id(StopId) ->
+load_by_id(StopId)  ->
     get_first(emongo:find_one(pool_mongo, "stop", [{"_id", StopId}])).
+search(Keyword)     ->
+    emongo:find(pool_mongo, "stop", [{"name",{regexp, Keyword, ["i"]}}], [{fields, ["name"]}]).
 
 % internal api
 get_first([H | _]) ->

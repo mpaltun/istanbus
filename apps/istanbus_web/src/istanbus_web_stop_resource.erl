@@ -14,10 +14,15 @@ content_types_provided(ReqData, Context) ->
    {[{"application/json",to_json}], ReqData, Context}.
 
 to_json(ReqData, Context) ->
-    case wrq:path_info(id, ReqData) of
-        undefined ->
+    case wrq:path_info(action, ReqData) of
+        undefined       ->
             { "request not supported", ReqData, Context };
-        StopId ->
+        "id"            ->
+            StopId = wrq:path_info(param, ReqData),
             Stop = istanbus_core_stop_module:load_by_id(StopId),
-            { mochijson2:encode(Stop),  ReqData, Context }
+            { mochijson2:encode(Stop),  ReqData, Context };
+        "search"        ->
+            Keyword = wrq:path_info(param, ReqData),
+            Stops = istanbus_core_stop_module:search(Keyword),
+            { mochijson2:encode(Stops),  ReqData, Context }
     end.
