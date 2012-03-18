@@ -44,14 +44,14 @@ cache(Dict) ->
     end.
 
 get_the_cache() ->
-    % does the room exists?
+    % does the cache exists?
     Pid = whereis(cache_pid),
     if
         is_pid(Pid) ->
-            % yup
+            % found
             Pid;
         true ->
-            % create it
+            % not found, create it
             NewPid = spawn(fun() ->
                 cache(dict:new())
             end),
