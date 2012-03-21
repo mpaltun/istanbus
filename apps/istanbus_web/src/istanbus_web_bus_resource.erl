@@ -28,8 +28,8 @@ to_json(ReqData, Context) ->
                     {mochijson2:encode(BusList), ReqData, Context}
             end;
         BusId ->
-			%B = unicode:characters_to_list(list_to_binary(http_uri:decode(BusId)), utf8),
-            Bus = istanbus_core_bus_module:load_by_id(BusId),
+			DecodedBusId = unicode:characters_to_list(list_to_binary(http_uri:decode(BusId)), utf8),
+            Bus = istanbus_core_bus_module:load_by_id(DecodedBusId),
             {mochijson2:encode(Bus),  ReqData, Context}
     end.
 

@@ -23,6 +23,7 @@ to_json(ReqData, Context) ->
             { mochijson2:encode(Stop),  ReqData, Context };
         "search"        ->
             Keyword = wrq:path_info(param, ReqData),
-            Stops = istanbus_core_stop_module:search(Keyword),
+            DecodedKeyword = unicode:characters_to_list(list_to_binary(http_uri:decode(Keyword)), utf8),
+            Stops = istanbus_core_stop_module:search(DecodedKeyword),
             { mochijson2:encode(Stops),  ReqData, Context }
     end.
