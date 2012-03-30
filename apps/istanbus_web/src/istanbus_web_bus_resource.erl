@@ -15,22 +15,19 @@ content_types_provided(ReqData, Context) ->
 
 to_json(ReqData, Context) ->
     case wrq:path_info(id, ReqData) of
-        "all" ->
-            Cache = get_the_cache(),
-            Cache ! {get, all, self()},
+        BusId ->
+			Cache = get_the_cache(),
+            DecodedBusId = unicode:characters_to_list(list_to_binary(http_uri:decode(BusId)), utf8),
+            Cache ! {get, DecodedBusId, self()},
             receive
                 error ->
-                    BusList = istanbus_core_bus_module:load_all(),
+                    Bus = istanbus_core_bus_module:load_by_id(DecodedBusId),
                     Cache = get_the_cache(),
-                    Cache ! {put, all, BusList},
-                    {mochijson2:encode(BusList), ReqData, Context};
-                {ok, BusList} ->
-                    {mochijson2:encode(BusList), ReqData, Context}
-            end;
-        BusId ->
-			DecodedBusId = unicode:characters_to_list(list_to_binary(http_uri:decode(BusId)), utf8),
-            Bus = istanbus_core_bus_module:load_by_id(DecodedBusId),
-            {mochijson2:encode(Bus),  ReqData, Context}
+                    Cache ! {put, DecodedBusId, Bus},
+                    {mochijson2:encode(Bus), ReqData, Context};
+                {ok, Bus} ->
+                    {mochijson2:encode(Bus), ReqData, Context}
+            end
     end.
 
 cache(Dict) ->
@@ -51,6 +48,7 @@ get_the_cache() ->
             % found
             Pid;
         true ->
+            erlang:display("cache started"),
             % not found, create it
             NewPid = spawn(fun() ->
                 cache(dict:new())
