@@ -3,7 +3,7 @@
 -export([load_by_id/1, search/1]).
 
 load_by_id(StopId)  ->
-    get_first(emongo:find_one(pool_mongo, "stop", [{"_id", StopId}])).
+    get_first(emongo:find_one(pool_mongo, "stop", [{"_id", StopId}], [{fields, ["name", "bus_list"]}])).
 search(Keyword)     ->
     emongo:find(pool_mongo, "stop", [{"words",{regexp, [ $^|Keyword], []}}], [{limit, 20}, {fields, ["name"]}]).
 
