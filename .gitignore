@@ -3,3 +3,4 @@ deps
 apps/*/ebin
 ebin
 *.DS_Store
+erl_crash.dump
