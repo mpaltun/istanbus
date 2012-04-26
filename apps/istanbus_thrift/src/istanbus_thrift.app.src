@@ -1,0 +1,12 @@
+{application, istanbus_thrift,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { istanbus_thrift_app, []}},
+  {env, []}
+ ]}.
