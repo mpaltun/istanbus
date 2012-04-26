@@ -18,4 +18,4 @@ distclean: clean
 	@./rebar delete-deps
 
 start: app
-	exec erl -pa $(PWD)/apps/*/ebin -pa $(PWD)/deps/*/ebin -boot start_sasl -s reloader -s istanbus_core -s istanbus_web
+	exec erl -pa $(PWD)/apps/*/ebin -pa $(PWD)/deps/*/ebin -boot start_sasl -s reloader -s istanbus_core -s istanbus_web -s istanbus_thrift
