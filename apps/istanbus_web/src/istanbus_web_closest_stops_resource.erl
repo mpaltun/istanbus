@@ -2,7 +2,7 @@
 %% @copyright 2012 mpaltun.
 %% @doc istanbus webmachine_resource.
 
--module(istanbus_web_howtogo_resource).
+-module(istanbus_web_closest_stops_resource).
 -export([init/1, to_json/2, content_types_provided/2]).
 
 -include_lib("webmachine/include/webmachine.hrl").
@@ -14,11 +14,8 @@ content_types_provided(ReqData, Context) ->
    {[{"application/json",to_json}], ReqData, Context}.
 
 to_json(ReqData, Context) ->
-    From = wrq:path_info(from, ReqData),
-    To = wrq:path_info(to, ReqData),
+    Latitude = wrq:path_info(lat, ReqData),
+    Longitude = wrq:path_info(long, ReqData),
     
-    DecodedFrom = unicode:characters_to_list(list_to_binary(http_uri:decode(From)), utf8),
-    DecodedTo = unicode:characters_to_list(list_to_binary(http_uri:decode(To)), utf8),
-    
-    Result = istanbus_thrift_bridge:recommend(DecodedFrom, DecodedTo),
+    Result = istanbus_thrift_bridge:get_closest_stops(Latitude, Longitude),
     {mochijson2:encode(Result), ReqData, Context}.
