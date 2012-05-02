@@ -23,10 +23,6 @@ start_link() ->
 %% @spec start() -> ok
 %% @doc Start the istanbus_thrift.
 start() ->
-    {ok, Client} = thrift_client_util:new("127.0.0.1",
-                                           9090,
-                                           recommendationService_thrift,
-                                           []),
     application:start(istanbus_thrift).
 
 %% @spec stop() -> ok
