@@ -28,7 +28,7 @@ function_info('get_closest_stops', params_type) ->
   {struct, [{1, string}, {2, string}]}
 ;
 function_info('get_closest_stops', reply_type) ->
-  {list, {list, string}};
+  string;
 function_info('get_closest_stops', exceptions) ->
   {struct, []}
 ;
