@@ -3,11 +3,11 @@
 -export([recommend/2, get_closest_stops/2]).
 
 recommend(From, To) ->
-    {ok, Client} = thrift_client_util:new("127.0.0.1", 9090, istanbusService_thrift, []),
     Key = From ++ "_" ++ To,
     Result = emongo:find_one(pool_mongo, "howtogo", [{"_id", Key}]),
     case Result of
         [] ->
+            {ok, Client} = thrift_client_util:new("127.0.0.1", 9090, istanbusService_thrift, []),
             {Client2, {ok, _Resp}} = thrift_client:call(Client, recommend, [From, To]),
             {_, ok} = thrift_client:close(Client2),
             get_first(emongo:find_one(pool_mongo, "howtogo", [{"_id", Key}]));
