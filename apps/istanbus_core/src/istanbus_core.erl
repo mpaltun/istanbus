@@ -23,7 +23,7 @@ start_link() ->
     istanbus_core_sup:start_link().
 
 %% @spec start() -> ok
-%% @doc Start the csd_core server.
+%% @doc Start the istanbus_core server.
 start() ->
     ensure_started(crypto),
     ensure_started(emongo),
@@ -31,7 +31,7 @@ start() ->
     application:start(istanbus_core).
 
 %% @spec stop() -> ok
-%% @doc Stop the csd_core server.
+%% @doc Stop the istanbus_core server.
 stop() ->
     Res = application:stop(istanbus_core),
     application:stop(crypto),
