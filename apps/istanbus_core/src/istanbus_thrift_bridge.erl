@@ -11,7 +11,7 @@ recommend(From, To) ->
             {ok, Client} = thrift_client_util:new("127.0.0.1", 9090, istanbusService_thrift, []),
             {Client2, {ok, _Resp}} = thrift_client:call(Client, recommend, [From, To]),
             {_, ok} = thrift_client:close(Client2),
-            get_first(emongo:find_one(pool_mongo, "howtogo", [{"_id", Key}]));
+            get_first(emongo:find_one(pool_mongo, "howtogo", [{"_id", DecodedKey}]));
         _ ->
             get_first(Result)
     end.
