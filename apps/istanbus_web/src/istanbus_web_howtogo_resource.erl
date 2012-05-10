@@ -17,8 +17,8 @@ to_json(ReqData, Context) ->
     From = wrq:path_info(from, ReqData),
     To = wrq:path_info(to, ReqData),
     
-    DecodedFrom = unicode:characters_to_list(list_to_binary(http_uri:decode(From)), utf8),
-    DecodedTo = unicode:characters_to_list(list_to_binary(http_uri:decode(To)), utf8),
+    DecodedFrom = http_uri:decode(From),
+    DecodedTo = http_uri:decode(To),
     
     Result = istanbus_thrift_bridge:recommend(DecodedFrom, DecodedTo),
     {mochijson2:encode(Result), ReqData, Context}.
