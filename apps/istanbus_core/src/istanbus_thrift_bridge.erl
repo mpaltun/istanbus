@@ -4,7 +4,8 @@
 
 recommend(From, To) ->
     Key = From ++ "_" ++ To,
-    Result = emongo:find_one(pool_mongo, "howtogo", [{"_id", Key}]),
+    DecodedKey = unicode:characters_to_list(list_to_binary(http_uri:decode(Key)), utf8),
+    Result = emongo:find_one(pool_mongo, "howtogo", [{"_id", DecodedKey}]),
     case Result of
         [] ->
             {ok, Client} = thrift_client_util:new("127.0.0.1", 9090, istanbusService_thrift, []),
