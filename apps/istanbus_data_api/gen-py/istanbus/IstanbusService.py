@@ -388,7 +388,7 @@ class get_closest_stops_result:
   """
 
   thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
+    (0, TType.LIST, 'success', (TType.LIST,(TType.STRING,None)), None, ), # 0
   )
 
   def __init__(self, success=None,):
@@ -404,8 +404,18 @@ class get_closest_stops_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
+        if ftype == TType.LIST:
+          self.success = []
+          (_etype24, _size21) = iprot.readListBegin()
+          for _i25 in xrange(_size21):
+            _elem26 = []
+            (_etype30, _size27) = iprot.readListBegin()
+            for _i31 in xrange(_size27):
+              _elem32 = iprot.readString();
+              _elem26.append(_elem32)
+            iprot.readListEnd()
+            self.success.append(_elem26)
+          iprot.readListEnd()
         else:
           iprot.skip(ftype)
       else:
@@ -419,8 +429,14 @@ class get_closest_stops_result:
       return
     oprot.writeStructBegin('get_closest_stops_result')
     if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
+      oprot.writeFieldBegin('success', TType.LIST, 0)
+      oprot.writeListBegin(TType.LIST, len(self.success))
+      for iter33 in self.success:
+        oprot.writeListBegin(TType.STRING, len(iter33))
+        for iter34 in iter33:
+          oprot.writeString(iter34)
+        oprot.writeListEnd()
+      oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
