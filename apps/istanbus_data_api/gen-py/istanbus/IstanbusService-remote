@@ -24,7 +24,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print ''
   print 'Functions:'
   print '   recommend(string from_stop, string to_stop)'
-  print '  string get_closest_stops(string latitude, string longitude)'
+  print '   get_closest_stops(string latitude, string longitude)'
   print ''
   sys.exit(0)
 
