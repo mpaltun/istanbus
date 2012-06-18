@@ -16,5 +16,6 @@ content_types_provided(ReqData, Context) ->
 to_json(ReqData, Context) ->
     Keyword = wrq:path_info(keyword, ReqData),
     DecodedKeyword = unicode:characters_to_list(list_to_binary(http_uri:decode(Keyword)), utf8),
-    Stops = istanbus_core_stop_module:search(DecodedKeyword),
+    Keywords = re:split(DecodedKeyword, " ", [{return, list}]),
+    Stops = istanbus_core_stop_module:search(Keywords),
     {mochijson2:encode(Stops),  ReqData, Context}.
