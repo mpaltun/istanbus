@@ -62,12 +62,12 @@ for stop in stops:
 		if len(busresults) > 0:
 			# text search improvement
 			words = re.compile('\W+',re.U).split(stopname.decode('utf-8'))
-			lower_words = []
+			upper_words = []
 			for word in words:
 				if (word != ''):
-					lower_words.append(word.lower())
+					upper_words.append(word.upper())
 
-			stop = { "_id" : stopcode, "name" : stopname, "bus_list" : busresults, "words" : lower_words }
+			stop = { "_id" : stopcode, "name" : stopname, "bus_list" : busresults, "words" : upper_words }
 			mongo_instance.insert_stop(stop)
 			print stop['_id'], " inserted"
 		else:
