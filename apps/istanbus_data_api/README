@@ -1,5 +1,0 @@
-istanbus database writer
-
-dependencies:
-	- lxml
-	- pymongo
