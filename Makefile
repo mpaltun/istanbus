@@ -22,4 +22,4 @@ start: app
 
 # detached start
 dstart: app
-	erl -pa $(PWD)/apps/*/ebin -pa $(PWD)/deps/*/ebin -boot start_sasl -s reloader -s istanbus_core -s istanbus_web -s istanbus_thrift -detached
+	erl -pa $(PWD)/istanbus_core/ebin -pa $(PWD)/istanbus_thrift/ebin -pa $(PWD)/istanbus_web/ebin -pa $(PWD)/deps/*/ebin -boot start_sasl -s reloader -s istanbus_core -s istanbus_web -s istanbus_thrift -detached
