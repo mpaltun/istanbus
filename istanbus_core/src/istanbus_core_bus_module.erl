@@ -30,4 +30,4 @@ get_first([]) ->
     {struct, []}.
 
 load_bus_with_fields(BusId, Fields) ->
-    emongo:find_one(pool_mongo, "bus", [{"_id", BusId}], [{fieldsnotid, Fields}]).
+    emongo:find_one(pool_mongo, "bus", [{"_id", BusId}], [{fieldsnoid, Fields}]).
