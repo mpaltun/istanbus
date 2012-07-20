@@ -16,10 +16,12 @@ search(Keyword) ->
     emongo:find(pool_mongo, "bus", [{"_id",{regexp, [ $^|Keyword], []}}], [{limit, 20}, {fields, ["name"]}]).
 
 load_stopscome(BusId) ->
-    load_bus_with_fields(BusId, ["stops_go"]).
+    Result = load_bus_with_fields(BusId, ["stops_come"]),
+    proplists:get_value(<<"stops_come">>, get_first(Result)).
 
 load_stopsgo(BusId) ->
-    load_bus_with_fields(BusId, ["stops_come"]).
+    Result = load_bus_with_fields(BusId, ["stops_go"]),
+    proplists:get_value(<<"stops_go">>, get_first(Result)).
 
 % internal api
 get_first([H | _]) ->
@@ -28,4 +30,4 @@ get_first([]) ->
     {struct, []}.
 
 load_bus_with_fields(BusId, Fields) ->
-    emongo:find_one(pool_mongo, "bus", [{"_id", BusId}], [{fields, Fields}]).
+    emongo:find_one(pool_mongo, "bus", [{"_id", BusId}], [{fieldsnotid, Fields}]).
