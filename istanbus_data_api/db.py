@@ -22,8 +22,8 @@ class MongoInstance:
 		self.db.stop2.insert(stop)
 		# print 'stop: ', stop['name'], ' inserted'
 
-	def insert_bus_list(self, bus_list):
-		self.db.bus.insert({"_id" : "all", "list" : bus_list})
+	def insert_bulk_stop2(self, stop_list):
+		self.db.stop2.insert(stop_list)
 
 	def ensure_index_stop(self, column_name):
 		self.db.stop.ensure_index(column_name, ASCENDING, unique=False)
