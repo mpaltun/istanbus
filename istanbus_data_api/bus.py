@@ -26,6 +26,8 @@ headers = {"Host" : "harita.iett.gov.tr", "Referer" : "http://harita.iett.gov.tr
 client = Client("harita.iett.gov.tr:80")
 client_mobile = Client("mobil.iett.gov.tr:80")
 
+mongo_instance.ensure_index_bus('id')
+
 # output/bus.txt must be produced, check it!
 f = codecs.open('output/bus.txt', encoding='utf-8')
 for line in f:
