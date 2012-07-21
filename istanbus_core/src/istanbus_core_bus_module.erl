@@ -1,7 +1,7 @@
 -module(istanbus_core_bus_module).
 
--export([load_all/0, load_by_id/1, search/1,
-            load_stopsgo/1, load_stopscome/1]).
+-export([load_all/0, load_by_id/1, search/1, load_stopsgo/1,
+            load_stopscome/1, load_timesheet/1]).
 
 load_all() ->
     Result = load_by_id("all"),
@@ -23,6 +23,9 @@ load_stopsgo(BusId) ->
     Result = load_bus_with_fields(BusId, ["stops_go"]),
     proplists:get_value(<<"stops_go">>, get_first(Result)).
 
+load_timesheet(BusId) ->
+    Result = load_bus_with_fields(BusId, ["time"]),
+    proplists:get_value(<<"time">>, get_first(Result)).
 % internal api
 get_first([H | _]) ->
     H;
