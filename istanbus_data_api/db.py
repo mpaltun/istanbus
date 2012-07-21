@@ -25,8 +25,9 @@ class MongoInstance:
     def insert_bulk_stop2(self, stop_list):
         self.db.stop2.insert(stop_list)
 
-    def ensure_index_stop(self, column_name):
-        self.db.stop.ensure_index(column_name, ASCENDING, unique=False)
+    def ensure_index_stop(self, column_names):
+        for (column_name, uniq) in column_names:
+            self.db.stop.ensure_index(column_name, ASCENDING, unique=uniq)
 
     def ensure_index_bus(self, column_name):
         self.db.bus.ensure_index(column_name, ASCENDING, unique=True)
