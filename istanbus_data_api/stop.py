@@ -60,6 +60,12 @@ for stop in stops:
 
         if len(bus_codes) > 0:
             bus_names = busofstophtml.xpath("//table//td[2]/span/text()")
+            bus_list = []
+            index = 0
+            for bus_code in bus_codes:
+                bus = {"id" : bus_code, "name" : bus_names[index]}
+                bus_list.append(bus)
+                index += 1
             
             # text search improvement
             words = re.compile('\W+',re.U).split(stopname.decode('utf-8'))
@@ -68,7 +74,7 @@ for stop in stops:
                 if (word != ''):
                     upper_words.append(word.upper())
         
-            stop = { "id" : stopcode, "name" : stopname, "bus_list" : dict(zip(bus_codes, bus_names)), "words" : upper_words }
+            stop = { "id" : stopcode, "name" : stopname, "bus_list" : bus_list, "words" : upper_words }
             mongo_instance.insert_stop(stop)
             print stop['id'], " inserted"
         else:
