@@ -32,5 +32,8 @@ class MongoInstance:
     def ensure_index_bus(self, column_name):
         self.db.bus.ensure_index(column_name, ASCENDING, unique=True)
 
+    def ensure_index_recommend(self, column_name):
+        self.db.howtogo.ensure_index(column_name, ASCENDING, unique=True)
+    
     def insert_recommendation(self, from_stop, to_stop, recommendations):
-        self.db.howtogo.insert({"_id" : from_stop + "_" + to_stop, "recommendations" : recommendations})
+        self.db.howtogo.insert({"id" : from_stop + "_" + to_stop, "recommendations" : recommendations})

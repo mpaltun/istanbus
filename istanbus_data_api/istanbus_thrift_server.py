@@ -21,7 +21,7 @@ closest_stops_finder = Closest_stops_finder()
 #closest_stops_finder.find(29.007735,41.0993)
 db_name = "istanbus_2012-07-21"
 mongo_instance = MongoInstance(db_name)
-
+mongo_instance.ensure_index_recommend("id")
 class IstanbusServiceHandler:
 	def __init__(self, recommender, closest_stops_finder):
 		self.recommender = recommender
