@@ -3,10 +3,10 @@
 -export([load_by_id/1, search/1]).
 
 load_by_id(StopId)  ->
-    get_first(emongo:find_one(pool_mongo, "stop", [{"_id", StopId}], [{fields, ["name", "bus_list"]}])).
+    get_first(emongo:find_one(pool_mongo, "stop", [{"id", StopId}], [{fieldsnoid, ["id", "name", "bus_list"]}])).
 search(Keywords)     ->
     Query = prepare_query(Keywords, []),
-    emongo:find(pool_mongo, "stop", Query, [{limit, 20}, {fields, ["name"]}]).
+    emongo:find(pool_mongo, "stop", Query, [{limit, 20}, {fieldsnoid, ["id", "name"]}]).
 
 % internal api
 get_first([H | _]) ->

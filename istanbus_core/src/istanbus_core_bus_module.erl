@@ -9,11 +9,11 @@ load_all() ->
     BusList.
 
 load_by_id(BusId) ->
-    Result = emongo:find_one(pool_mongo, "bus", [{"_id", BusId}], [{fields, ["stops_go", "time", "stops_come", "notes"]}]),
+    Result = emongo:find_one(pool_mongo, "bus", [{"id", BusId}], [{fieldsnoid, ["id", "stops_go", "time", "stops_come", "notes"]}]),
     get_first(Result).
 
 search(Keyword) ->
-    emongo:find(pool_mongo, "bus", [{"_id",{regexp, [ $^|Keyword], []}}], [{limit, 20}, {fields, ["name"]}]).
+    emongo:find(pool_mongo, "bus", [{"id",{regexp, [ $^|Keyword], []}}], [{limit, 20}, {fieldsnoid, ["name"]}]).
 
 load_stopscome(BusId) ->
     Result = load_bus_with_fields(BusId, ["stops_come"]),
@@ -30,4 +30,4 @@ get_first([]) ->
     {struct, []}.
 
 load_bus_with_fields(BusId, Fields) ->
-    emongo:find_one(pool_mongo, "bus", [{"_id", BusId}], [{fieldsnoid, Fields}]).
+    emongo:find_one(pool_mongo, "bus", [{"id", BusId}], [{fieldsnoid, Fields}]).
