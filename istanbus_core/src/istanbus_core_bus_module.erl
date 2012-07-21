@@ -13,7 +13,7 @@ load_by_id(BusId) ->
     get_first(Result).
 
 search(Keyword) ->
-    emongo:find(pool_mongo, "bus", [{"id",{regexp, [ $^|Keyword], []}}], [{limit, 20}, {fieldsnoid, ["name"]}]).
+    emongo:find(pool_mongo, "bus", [{"id",{regexp, [ $^|Keyword], []}}], [{limit, 20}, {fieldsnoid, ["id", "name"]}]).
 
 load_stopscome(BusId) ->
     Result = load_bus_with_fields(BusId, ["stops_come"]),
