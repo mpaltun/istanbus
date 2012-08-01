@@ -19,5 +19,5 @@ prepare_query([], Queries) ->
     Queries;
 
 prepare_query([Keyword | Keywords], Queries) ->
-    Query = {"words",{regexp, [$^ | Keyword], []}},
+    Query = {"words", Keyword},
     prepare_query(Keywords, [Query | Queries]).
