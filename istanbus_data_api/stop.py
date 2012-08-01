@@ -9,7 +9,7 @@ from db import MongoInstance
 from client import Client
 from char_replacer import CharReplacer
 import urllib
-import re
+from stemmer import Stemmer
 
 # connect to db
 db_name = "istanbus_" + strftime("%Y-%m-%d") # i.e istanbus_2012-02-09
@@ -20,6 +20,9 @@ mongo_instance.ensure_index_stop([("id", True), ("words", False)])
 
 #replacer
 replacer = CharReplacer()
+
+#stemmer
+stemmer  = Stemmer()
 
 # parse stop.html with xpath
 try:
@@ -68,7 +71,7 @@ for stop in stops:
                 index += 1
             
             # text search improvement
-            words = re.compile('\W+',re.U).split(stopname.decode('utf-8'))
+            words = stemmer.text_to_parts(stopname.decode('utf-8'))
             upper_words = []
             for word in words:
                 if (word != ''):
