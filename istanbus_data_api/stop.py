@@ -56,7 +56,7 @@ for stop in stops:
         # request bus list that goes through this stop
         param = urllib.urlencode({'durak': stopcode})
         response = client.get(busofstopurl + param, "", headers)
-        busofstophtml = lxml.html.parse(response, lxml.html.HTMLParser(encoding="utf-8"))
+        busofstophtml = lxml.html.parse(response)
 
         # query bus code
         bus_codes = busofstophtml.xpath("//table//td[1]/text()")[1:]
@@ -66,7 +66,7 @@ for stop in stops:
             bus_list = []
             index = 0
             for bus_code in bus_codes:
-                bus = {"id" : bus_code, "name" : bus_names[index]}
+                bus = {"id" : bus_code.encode("ISO-8859-1"), "name" : bus_names[index].encode('ISO-8859-1')}
                 bus_list.append(bus)
                 index += 1
             
