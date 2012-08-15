@@ -6,6 +6,7 @@ import codecs
 import lxml.html
 import sys
 import urlparse
+import re
 from time import strftime
 from db import MongoInstance
 from client import Client
@@ -28,6 +29,13 @@ client_mobile = Client("mobil.iett.gov.tr:80")
 
 mongo_instance.ensure_index_bus('id')
 
+def parse_href(href):
+    # href is like JavaScript:hattahmin('Ş0026','ŞİŞHANE 6')
+    result = re.search("JavaScript:hattahmin\('(.*)','(.*)'\)", href)
+    stop_id = result.group(1)
+    stop_name = result.group(2)
+    return {"id" : stop_id, "name": stop_name.encode('utf-8')}
+    
 # output/bus.txt must be produced, check it!
 f = codecs.open('output/bus.txt', encoding='utf-8')
 for line in f:
@@ -39,7 +47,7 @@ if (bus_list):
             bus_code = values[0].strip()
             bus_name = values[1].strip()
             
-            #if (bus_code != "399C"):
+            #if (bus_code != "_BT"):
             #    continue 
             
             # replace x_chars
@@ -117,6 +125,20 @@ if (bus_list):
                 if (direction == 'G'):
                     go_stop_list.append(stop_summary)
                 elif (direction == 'D'):
+                    turn_stop_list.append(stop_summary)
+
+            if (len(stop_list) == 0):
+                params = "sorgu=durak&hat=" + encoded_bus_code
+                response = client.get("/hat_sorgula_v3.php3?" + params,"" , {})
+                bus_html = lxml.html.parse(response, lxml.html.HTMLParser(encoding="utf-8"))
+                hrefs_go = bus_html.xpath('//table//td[1]/table//table/tr/td[3]/a[1]/@href')
+                hrefs_come = bus_html.xpath('//table//td[2]/table//table/tr/td[3]/a[1]/@href')
+                for href_go in hrefs_go:
+                    stop_summary = parse_href(href_go)
+                    go_stop_list.append(stop_summary)
+                
+                for href_come in hrefs_come:
+                    stop_summary = parse_href(href_come)
                     turn_stop_list.append(stop_summary)
 
             bus = { "id" : bus_code, "x_id" : x_bus_code,"encoded_id" : encoded_bus_code, "name" : bus_name, "stops_go" : go_stop_list, "stops_come" : turn_stop_list,
