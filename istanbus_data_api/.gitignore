@@ -1,6 +1,5 @@
 .DS_Store
 .pydevproject
 .project
-output/*.txt
-output/*.html
+output/*
 *.pyc
