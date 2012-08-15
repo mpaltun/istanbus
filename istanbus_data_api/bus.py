@@ -35,6 +35,10 @@ def parse_href(href):
     stop_id = result.group(1)
     stop_name = result.group(2)
     return {"id" : stop_id, "name": stop_name.encode('utf-8')}
+
+def parse_stop_id_from_href(href):
+    # href is like javascript:top.ajaxGet('durak_hat_listesi_v3.php?dadi=ATATU:RK HAVALI:MANI&durak=U0008','durak');haritagoster('durak');
+    return re.search("(.*)&durak=(.*)','(.*)", href).group(2)
     
 # output/bus.txt must be produced, check it!
 f = codecs.open('output/bus.txt', encoding='utf-8')
@@ -47,7 +51,7 @@ if (bus_list):
             bus_code = values[0].strip()
             bus_name = values[1].strip()
             
-            #if (bus_code != "_BT"):
+            # if (bus_code != "_M1"):
             #    continue 
             
             # replace x_chars
@@ -133,13 +137,22 @@ if (bus_list):
                 bus_html = lxml.html.parse(response, lxml.html.HTMLParser(encoding="utf-8"))
                 hrefs_go = bus_html.xpath('//table//td[1]/table//table/tr/td[3]/a[1]/@href')
                 hrefs_come = bus_html.xpath('//table//td[2]/table//table/tr/td[3]/a[1]/@href')
+                i = 2 
                 for href_go in hrefs_go:
                     stop_summary = parse_href(href_go)
+                    if (len(stop_summary['id']) == 0):
+                        stop_summary['id'] = parse_stop_id_from_href(bus_html.xpath('//table//td[1]/table//table/tr[' + str(i) + ']/td[3]/a[5]/@href')[0])
+                        stop_summary['name'] = bus_html.xpath('//table//td[1]/table//table/tr[' + str(i) +']/td[2]/span[1]/text()')[0]
                     go_stop_list.append(stop_summary)
-                
+                    i+=1
+                i = 2 
                 for href_come in hrefs_come:
                     stop_summary = parse_href(href_come)
+                    if (len(stop_summary['id']) == 0):
+                        stop_summary['id'] = parse_stop_id_from_href(bus_html.xpath('//table//td[2]/table//table/tr[' + str(i) + ']/td[3]/a[5]/@href')[0])
+                        stop_summary['name'] = bus_html.xpath('//table//td[2]/table//table/tr[' + str(i) +']/td[2]/span[1]/text()')[0]
                     turn_stop_list.append(stop_summary)
+                    i+=1
 
             bus = { "id" : bus_code, "x_id" : x_bus_code,"encoded_id" : encoded_bus_code, "name" : bus_name, "stops_go" : go_stop_list, "stops_come" : turn_stop_list,
             "time" : {"workday_go" : go_workday_time_list, "saturday_go" : go_saturday_time_list, "sunday_go" : go_sunday_time_list,
