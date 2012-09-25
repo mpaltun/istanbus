@@ -11,6 +11,7 @@ class Where_is_my_bus:
         self.url = '/?'
 
     def find(self, bus_id, order=""):
+        print "Where_is_my_bus requested for bus: " + bus_id
         response = self.client.get(self.url + self.params.format(bus_id, order), "" , self.headers)
         parsed_xml = lxml.html.parse(response, lxml.html.HTMLParser(encoding="utf-8"))
         info_list = parsed_xml.xpath("/html/body//text()")
@@ -20,16 +21,16 @@ class Where_is_my_bus:
             if result is not None:
                 bus_info = result.groups()
                 distance_result = re.search("a (.*) metre  mesafedeydi", bus_info[6])
-                distance = 0
+                distance = "0"
                 if distance_result is not None:
-                    distance = int(distance_result.group(1))
+                    distance = distance_result.group(1)
                 bus = [
-                    int(bus_info[0]),   # order
-                    bus_info[1].strip(),# type
-                    int(bus_info[2]),   # seconds
-                    bus_info[3],        # destination
-                    bus_info[5].strip(),# stop name
-                    distance            # distance to stop (as meter)
+                    bus_info[0],                        # order
+                    bus_info[1].strip().encode('utf-8'),# type
+                    bus_info[2],                        # seconds
+                    bus_info[3].encode('utf-8'),        # destination
+                    bus_info[5].strip().encode('utf-8'),# stop name
+                    distance                            # distance to stop (as meter)
                 ]
                 search_result.append(bus)
         return search_result
