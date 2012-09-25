@@ -1,6 +1,6 @@
 -module(istanbus_thrift_bridge).
 
--export([recommend/2, get_closest_stops/2]).
+-export([recommend/2, get_closest_stops/2, where_is_my_bus/1]).
 
 recommend(From, To) ->
     Key = From ++ "_" ++ To,
@@ -19,6 +19,12 @@ recommend(From, To) ->
 get_closest_stops(Latitude, Longitude) ->
     {ok, Client} = thrift_client_util:new("127.0.0.1", 9090, istanbusService_thrift,[]),
     {Client2, {ok, Response}} = thrift_client:call(Client, get_closest_stops, [Latitude, Longitude]),
+    {_, ok} = thrift_client:close(Client2),
+    Response.
+
+where_is_my_bus(BusName) ->
+    {ok, Client} = thrift_client_util:new("127.0.0.1", 9090, istanbusService_thrift,[]),
+    {Client2, {ok, Response}} = thrift_client:call(Client, where_is_my_bus, [BusName]),
     {_, ok} = thrift_client:close(Client2),
     Response.
 
