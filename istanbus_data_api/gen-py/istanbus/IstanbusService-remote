@@ -25,6 +25,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print 'Functions:'
   print '   recommend(string from_stop, string to_stop)'
   print '   get_closest_stops(string latitude, string longitude)'
+  print '   where_is_my_bus(string bus_name)'
   print ''
   sys.exit(0)
 
@@ -87,6 +88,12 @@ elif cmd == 'get_closest_stops':
     print 'get_closest_stops requires 2 args'
     sys.exit(1)
   pp.pprint(client.get_closest_stops(args[0],args[1],))
+
+elif cmd == 'where_is_my_bus':
+  if len(args) != 1:
+    print 'where_is_my_bus requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.where_is_my_bus(args[0],))
 
 else:
   print 'Unrecognized method %s' % cmd

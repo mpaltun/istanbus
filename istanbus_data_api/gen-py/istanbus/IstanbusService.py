@@ -34,6 +34,13 @@ class Iface:
     """
     pass
 
+  def where_is_my_bus(self, bus_name):
+    """
+    Parameters:
+     - bus_name
+    """
+    pass
+
 
 class Client(Iface):
   def __init__(self, iprot, oprot=None):
@@ -106,6 +113,36 @@ class Client(Iface):
       return result.success
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_closest_stops failed: unknown result");
 
+  def where_is_my_bus(self, bus_name):
+    """
+    Parameters:
+     - bus_name
+    """
+    self.send_where_is_my_bus(bus_name)
+    return self.recv_where_is_my_bus()
+
+  def send_where_is_my_bus(self, bus_name):
+    self._oprot.writeMessageBegin('where_is_my_bus', TMessageType.CALL, self._seqid)
+    args = where_is_my_bus_args()
+    args.bus_name = bus_name
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_where_is_my_bus(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = where_is_my_bus_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "where_is_my_bus failed: unknown result");
+
 
 class Processor(Iface, TProcessor):
   def __init__(self, handler):
@@ -113,6 +150,7 @@ class Processor(Iface, TProcessor):
     self._processMap = {}
     self._processMap["recommend"] = Processor.process_recommend
     self._processMap["get_closest_stops"] = Processor.process_get_closest_stops
+    self._processMap["where_is_my_bus"] = Processor.process_where_is_my_bus
 
   def process(self, iprot, oprot):
     (name, type, seqid) = iprot.readMessageBegin()
@@ -147,6 +185,17 @@ class Processor(Iface, TProcessor):
     result = get_closest_stops_result()
     result.success = self._handler.get_closest_stops(args.latitude, args.longitude)
     oprot.writeMessageBegin("get_closest_stops", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_where_is_my_bus(self, seqid, iprot, oprot):
+    args = where_is_my_bus_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = where_is_my_bus_result()
+    result.success = self._handler.where_is_my_bus(args.bus_name)
+    oprot.writeMessageBegin("where_is_my_bus", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -435,6 +484,141 @@ class get_closest_stops_result:
         oprot.writeListBegin(TType.STRING, len(iter33))
         for iter34 in iter33:
           oprot.writeString(iter34)
+        oprot.writeListEnd()
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class where_is_my_bus_args:
+  """
+  Attributes:
+   - bus_name
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'bus_name', None, None, ), # 1
+  )
+
+  def __init__(self, bus_name=None,):
+    self.bus_name = bus_name
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.bus_name = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('where_is_my_bus_args')
+    if self.bus_name is not None:
+      oprot.writeFieldBegin('bus_name', TType.STRING, 1)
+      oprot.writeString(self.bus_name)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class where_is_my_bus_result:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.LIST, 'success', (TType.LIST,(TType.STRING,None)), None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.LIST:
+          self.success = []
+          (_etype38, _size35) = iprot.readListBegin()
+          for _i39 in xrange(_size35):
+            _elem40 = []
+            (_etype44, _size41) = iprot.readListBegin()
+            for _i45 in xrange(_size41):
+              _elem46 = iprot.readString();
+              _elem40.append(_elem46)
+            iprot.readListEnd()
+            self.success.append(_elem40)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('where_is_my_bus_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.LIST, 0)
+      oprot.writeListBegin(TType.LIST, len(self.success))
+      for iter47 in self.success:
+        oprot.writeListBegin(TType.STRING, len(iter47))
+        for iter48 in iter47:
+          oprot.writeString(iter48)
         oprot.writeListEnd()
       oprot.writeListEnd()
       oprot.writeFieldEnd()

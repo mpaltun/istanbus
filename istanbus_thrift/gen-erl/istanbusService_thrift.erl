@@ -32,5 +32,14 @@ function_info('get_closest_stops', reply_type) ->
 function_info('get_closest_stops', exceptions) ->
   {struct, []}
 ;
+% where_is_my_bus(This, Bus_name)
+function_info('where_is_my_bus', params_type) ->
+  {struct, [{1, string}]}
+;
+function_info('where_is_my_bus', reply_type) ->
+  {list, {list, string}};
+function_info('where_is_my_bus', exceptions) ->
+  {struct, []}
+;
 function_info(_Func, _Info) -> no_function.
 
