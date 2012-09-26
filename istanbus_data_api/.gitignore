@@ -3,3 +3,4 @@
 .project
 output/*
 *.pyc
+nohup.out
