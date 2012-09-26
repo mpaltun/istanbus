@@ -41,7 +41,11 @@ class IstanbusServiceHandler:
         return self.closest_stops_finder.find(latitude, longitude)
 
     def where_is_my_bus(self, bus_name):
-        return self.where_is_my_bus_module.find(bus_name)
+        try:
+            return self.where_is_my_bus_module.find(bus_name)
+        except:
+            print "Exception while accessing 3n.iett.gov.tr"
+            return []
 
 
 
