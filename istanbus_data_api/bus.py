@@ -83,7 +83,14 @@ if (bus_list):
                         stop['id'] = vals[0]
                         stop['code'] = vals[1]
                         stop['u_desc'] = vals[2]
-                    stop[child.tag] = child.text
+                    tag = child.tag
+                    if (tag == "long"):
+                        tag = "longitude"
+                    elif (tag == "lat"):
+                        tag = "latitude"
+                    elif (tag == "title"):
+                        tag = "name"
+                    stop[tag] = child.text
                 stop2_list.append(stop)
             if (stop2_list != []):
                 mongo_instance.insert_bulk_stop2(stop2_list)
