@@ -31,4 +31,4 @@ prepare_query([Keyword | Keywords], Queries) ->
 result([]) ->
     [];
 result([ LocationQuery | _]) ->
-    emongo:find(pool_mongo, "stop2", LocationQuery, [{limit, 1}, {fieldsnoid, ["id", "lat", "long"]}]).
+    emongo:find(pool_mongo, "stop2", LocationQuery, [{limit, 1}, {fieldsnoid, ["id", "latitude", "longitude"]}]).
