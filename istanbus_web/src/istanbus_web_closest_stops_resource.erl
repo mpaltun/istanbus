@@ -14,8 +14,7 @@ content_types_provided(ReqData, Context) ->
    {[{"application/json",to_json}], ReqData, Context}.
 
 to_json(ReqData, Context) ->
-    Latitude = wrq:path_info(lat, ReqData),
-    Longitude = wrq:path_info(long, ReqData),
-    
-    Result = istanbus_thrift_bridge:get_closest_stops(Latitude, Longitude),
+    {Latitude, []} = string:to_float(wrq:path_info(lat, ReqData)),
+    {Longitude, []} = string:to_float(wrq:path_info(long, ReqData)),
+    Result = istanbus_core_stop_module:find_closest(Latitude, Longitude),
     {mochijson2:encode(Result), ReqData, Context}.

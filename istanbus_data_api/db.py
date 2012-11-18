@@ -6,7 +6,7 @@ from pymongo import ASCENDING
 class MongoInstance:
     def __init__(self, db_name):
         print "trying to connect mongo at localhost"
-        connection = Connection()
+        connection = Connection('linode', 27017)
         print "connected"
         self.db = connection[db_name]
 
