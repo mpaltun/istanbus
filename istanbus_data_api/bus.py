@@ -28,7 +28,9 @@ client = Client("harita.iett.gov.tr:80")
 client_mobile = Client("mobil.iett.gov.tr:80")
 
 mongo_instance.ensure_index_bus('id')
+mongo_instance.ensure_index_bus('stops_go.id', False)
 mongo_instance.ensure_index_stop2('id')
+mongo_instance.create_index_stop_location("location")
 
 def parse_href(href):
     # href is like JavaScript:hattahmin('Ş0026','ŞİŞHANE 6')
@@ -71,29 +73,37 @@ if (bus_list):
             x_bus_code = replacer.replace_x(bus_code)
 
             # get stops of bus from xml
-            xml_name = "/XML/" + x_bus_code + "hatDurak.xml"
+            xml_name = '/XML/' + x_bus_code + "hatDurak.xml"
             response = client.get(xml_name, "", headers)
             parsed_xml = lxml.html.parse(response)
-            stop2_list = []
+            stop_list = []
             for item in parsed_xml.getiterator('item'):
                 stop = {}
                 for child in item.getchildren():
                     if (child.tag == 'description'):
                         vals = child.text.split('aaa')
                         stop['id'] = vals[0]
-                        stop['code'] = vals[1]
-                        stop['u_desc'] = vals[2]
+                        stop['id2'] = vals[1]
+                        #stop['u_desc'] = vals[2]
                     tag = child.tag
-                    if (tag == "long"):
-                        tag = "longitude"
-                    elif (tag == "lat"):
-                        tag = "latitude"
-                    elif (tag == "title"):
-                        tag = "name"
-                    stop[tag] = child.text
-                stop2_list.append(stop)
-            if (stop2_list != []):
-                mongo_instance.insert_bulk_stop2(stop2_list)
+                    if (tag == 'long'):
+                        tag = 'longitude'
+                    elif (tag == 'lat'):
+                        tag = 'latitude'
+                    elif (tag == 'title'):
+                        tag = 'name'
+                    if (tag != 'description'):
+                        stop[tag] = child.text
+                
+                location_data = [ float(stop['latitude'], float(stop['longitude']) ]
+                del stop['longitude'];
+                del stop['latitude']
+                stop['location'] = location_data
+                stop_list.append(stop)
+            if (stop_list != []):
+                mongo_instance.insert_bulk_stop2(stop_list)
+            else:
+                print 'warning: ', bus_code.encode("utf-8"), ' has no stops'
             # encode turkish chars
             encoded_bus_code = replacer.encode(bus_code)
 
@@ -160,7 +170,7 @@ if (bus_list):
                 go_stop_list = parse_stops(hrefs_go, '1')
                 turn_stop_list = parse_stops(hrefs_come, '2')
 
-            bus = { "id" : bus_code, "x_id" : x_bus_code,"encoded_id" : encoded_bus_code, "name" : bus_name, "stops_go" : go_stop_list, "stops_come" : turn_stop_list,
+            bus = { "id" : bus_code, "name" : bus_name, "stops_go" : go_stop_list, "stops_come" : turn_stop_list,
             "time" : {"workday_go" : go_workday_time_list, "saturday_go" : go_saturday_time_list, "sunday_go" : go_sunday_time_list,
             "workday_come" : come_workday_time_list, "saturday_come" : come_saturday_time_list, "sunday_come" : come_sunday_time_list
             }, "notes" : notes[2:]}

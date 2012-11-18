@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from pymongo import Connection
+from pymongo import Connection, GEO2D
 from pymongo import ASCENDING
 
 class MongoInstance:
@@ -29,8 +29,11 @@ class MongoInstance:
         for (column_name, uniq) in column_names:
             self.db.stop.ensure_index(column_name, ASCENDING, unique=uniq)
 
-    def ensure_index_bus(self, column_name):
-        self.db.bus.ensure_index(column_name, ASCENDING, unique=True)
+    def ensure_index_bus(self, column_name, uniq=True):
+        self.db.bus.ensure_index(column_name, ASCENDING, unique=uniq)
+
+    def create_index_stop_location(self, col):
+        self.db.stop2.create_index([(col, GEO2D)])
 
     def ensure_index_recommend(self, column_name):
         self.db.howtogo.ensure_index(column_name, ASCENDING, unique=True)
