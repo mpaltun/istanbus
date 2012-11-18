@@ -95,7 +95,7 @@ if (bus_list):
                     if (tag != 'description'):
                         stop[tag] = child.text
                 
-                location_data = [ float(stop['latitude'], float(stop['longitude']) ]
+                location_data = [ float(stop['latitude']), float(stop['longitude']) ]
                 del stop['longitude'];
                 del stop['latitude']
                 stop['location'] = location_data
