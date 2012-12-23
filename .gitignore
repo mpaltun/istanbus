@@ -5,3 +5,5 @@ ebin
 *.DS_Store
 erl_crash.dump
 *.swp
+.idea
+*.iml

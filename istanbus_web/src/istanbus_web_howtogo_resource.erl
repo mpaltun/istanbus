@@ -21,4 +21,4 @@ to_json(ReqData, Context) ->
     DecodedTo = http_uri:decode(To),
     
     Result = istanbus_thrift_bridge:recommend(DecodedFrom, DecodedTo),
-    {mochijson2:encode(Result), ReqData, Context}.
+    {Result, ReqData, Context}.
