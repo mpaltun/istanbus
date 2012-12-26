@@ -12,18 +12,17 @@ import org.istanbus.core.service.impl.SearchServiceImpl;
 
 public class IstanbusThriftServer {
 
-    private PathFinderService pathFinderService;
-    private SearchService searchService;
+    private IstanbusJavaService.Iface istanbusJavaService;
 
-    public IstanbusThriftServer(PathFinderService pathFinderService, SearchService searchService) {
-        this.pathFinderService = pathFinderService;
-        this.searchService = searchService;
+    @Inject
+    public IstanbusThriftServer(IstanbusJavaService.Iface istanbusJavaService) {
+        this.istanbusJavaService = istanbusJavaService;
     }
 
     public void start() {
         try {
             TNonblockingServerTransport serverTransport = new TNonblockingServerSocket(9090);
-            IstanbusJavaService.Processor processor = new IstanbusJavaService.Processor(new IstanbusJavaServiceImpl(pathFinderService, searchService));
+            IstanbusJavaService.Processor processor = new IstanbusJavaService.Processor(istanbusJavaService);
 
             TServer server = new TNonblockingServer(new TNonblockingServer.Args(serverTransport).
                     processor(processor));

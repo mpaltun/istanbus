@@ -1,6 +1,7 @@
 package org.istanbus.api;
 
 import com.google.gson.Gson;
+import com.google.inject.Inject;
 import org.apache.thrift.TException;
 import org.istanbus.core.model.StopSearchResult;
 import org.istanbus.core.model.Transport;
@@ -20,6 +21,7 @@ public class IstanbusJavaServiceImpl implements IstanbusJavaService.Iface {
     private PathFinderService pathFinderService;
     private SearchService searchService;
 
+    @Inject
     public IstanbusJavaServiceImpl(PathFinderService pathFinderService, SearchService searchService) {
         this.pathFinderService = pathFinderService;
         this.searchService = searchService;

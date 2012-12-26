@@ -31,8 +31,8 @@ public class PathFinderServiceImpl implements PathFinderService {
         db = graphDB.getInstance();
         stopIndex = db.index().forNodes("stops");
 
-        Expander expander = Traversal.expanderForTypes(RelationShip.DIRECTION_GO);
-        finder = GraphAlgoFactory.shortestPath(expander, 20);
+        Expander expander = Traversal.expanderForAllTypes(Direction.OUTGOING);
+        finder = GraphAlgoFactory.shortestPath(expander, 10);
     }
 
     @Override
@@ -44,6 +44,15 @@ public class PathFinderServiceImpl implements PathFinderService {
         Path path = finder.findSinglePath(nodeA, nodeB);
         return getTransports(path);
 
+    }
+
+    private Stop getStopFromNode(Node node)
+    {
+        Stop stop = new Stop();
+        stop.setCode((String) node.getProperty("code"));
+        stop.setName((String) node.getProperty("label"));
+
+        return stop;
     }
 
     private List<Transport> getTransports(Path path)
@@ -63,9 +72,13 @@ public class PathFinderServiceImpl implements PathFinderService {
             String bus = (String) relationship.getProperty("bus");
 
             // if this is same bus, then just increment stop count of previous one
+            // and set last stop
             if (previousTransport != null && previousTransport.getBus().equals(bus))
             {
                 previousTransport.setStopCount(previousTransport.getStopCount() + 1);
+                // last stop
+                Stop to = getStopFromNode(endNode);
+                previousTransport.setTo(to);
                 continue;
             }
 
@@ -75,14 +88,10 @@ public class PathFinderServiceImpl implements PathFinderService {
             int stopCount = (Integer) relationship.getProperty("stopCount");
             transport.setStopCount(stopCount);
 
-            Stop from = new Stop();
-            from.setCode(startNode.getProperty("code").toString());
-            from.setName(startNode.getProperty("label").toString());
+            Stop from = getStopFromNode(startNode);
             transport.setFrom(from);
 
-            Stop to = new Stop();
-            to.setCode(endNode.getProperty("code").toString());
-            to.setName(endNode.getProperty("label").toString());
+            Stop to = getStopFromNode(endNode);
             transport.setTo(to);
 
             previousTransport = transport;

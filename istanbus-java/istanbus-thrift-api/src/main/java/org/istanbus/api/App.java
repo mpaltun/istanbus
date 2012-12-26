@@ -18,14 +18,14 @@ public class App {
             @Override
             protected void configure() {
                 install(new CoreModule());
+                bind(IstanbusJavaService.Iface.class).to(IstanbusJavaServiceImpl.class);
+                bind(IstanbusThriftServer.class);
             }
         });
         logger.info("Guice initialized.");
 
-        PathFinderService pathFinderService = injector.getInstance(PathFinderService.class);
-        SearchService searchService = injector.getInstance(SearchService.class);
-        IstanbusThriftServer istanbusThriftServer = new IstanbusThriftServer(pathFinderService, searchService);
-        istanbusThriftServer.start();
+        IstanbusThriftServer server = injector.getInstance(IstanbusThriftServer.class);
+        server.start();
     }
 
     public static void main(String[] args) throws Exception {

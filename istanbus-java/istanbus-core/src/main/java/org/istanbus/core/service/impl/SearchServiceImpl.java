@@ -2,8 +2,6 @@ package org.istanbus.core.service.impl;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.istanbus.core.model.StopSearchResult;
-import org.istanbus.core.service.SearchService;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexNotFoundException;
@@ -16,6 +14,8 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.istanbus.core.model.StopSearchResult;
+import org.istanbus.core.service.SearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +28,7 @@ public class SearchServiceImpl implements SearchService {
 
     private static final Logger logger = LoggerFactory.getLogger(SearchServiceImpl.class);
     private final IndexSearcher searcher;
+    private SearchIndexServiceImpl searchIndexService;
 
     @Inject
     public SearchServiceImpl(@Named("search.index.file.path") String indexPath) {

@@ -61,23 +61,22 @@ public class GraphBuildServiceImpl implements GraphBuildService {
 
     private void linkStops(String busCode, List<Stop> stops, RelationShip relationShip) {
         Transaction tx = db.beginTx();
-        Node[] nodes = {null, null, null};
+        Node previousNode = null;
         for (Stop stop : stops) {
-            if (nodes[1] == null) {
+            if (previousNode == null) {
                 // here comes only once
-                nodes[1] = createNodeFromStop(stop);
-            } else {
-                nodes[2] = createNodeFromStop(stop);
-                logger.info("Linking stop {} to stop {}", nodes[1].getProperty(label), nodes[2].getProperty(label));
+                previousNode = createNodeFromStop(stop);
+            }
+            else {
+                Node node = createNodeFromStop(stop);
+                logger.info("Linking stop {} to stop {}", previousNode.getProperty(label), node.getProperty(label));
 
-                Relationship relationship = nodes[1].createRelationshipTo(nodes[2], relationShip);
+                Relationship relationship = previousNode.createRelationshipTo(node, relationShip);
                 relationship.setProperty("bus", busCode);
                 relationship.setProperty("stopCount", 1);
 
                 tx.success();
-                // shift
-                nodes[0] = nodes[1];
-                nodes[1] = nodes[2];
+                previousNode = node;
             }
         }
         tx.finish();

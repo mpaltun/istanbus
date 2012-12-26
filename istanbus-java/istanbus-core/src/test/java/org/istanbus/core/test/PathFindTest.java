@@ -17,6 +17,10 @@ public class PathFindTest {
 
     private PathFinderService pathFinderService;
 
+    // from taksim to kadikoy carsi
+    private String from = "Ş0015";
+    private String to = "A0587";
+
     @Inject
     public void setService(PathFinderService pathFinderService) {
         this.pathFinderService = pathFinderService;
@@ -24,8 +28,18 @@ public class PathFindTest {
 
     @Test
     public void testPathFind() throws Exception {
-        // from taksim to kadikoy carsi
-        List<Transport> transports = pathFinderService.find("Ş0015", "A0587");
-        Assert.assertNotEquals(transports.size(), 0);
+        List<Transport> transports = pathFinderService.find(from, to);
+        Assert.assertFalse(transports.isEmpty());
     }
+
+    @Test
+    public void testPathFindConsistency() throws Exception {
+        List<Transport> transports = pathFinderService.find(from, to);
+        Transport first = transports.get(0);
+        Transport last = transports.get(transports.size() - 1);
+
+        Assert.assertEquals(from, first.getFrom().getCode());
+        Assert.assertEquals(to, last.getTo().getCode());
+    }
+
 }
