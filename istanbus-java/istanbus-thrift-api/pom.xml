@@ -37,7 +37,7 @@
 					</descriptorRefs>
 					<archive>
 						<manifest>
-							<mainClass>net.istanbus.api.App</mainClass>
+							<mainClass>org.istanbus.api.App</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
