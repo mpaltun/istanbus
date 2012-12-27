@@ -1,11 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.istanbus</groupId>
-  <artifactId>istanbus-java</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>pom</packaging>
-  <name>istanbus-java</name>
-  <build>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.istanbus</groupId>
+    <artifactId>istanbus-java</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>istanbus-java</name>
+    <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -27,23 +28,47 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>windows_profile</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <properties>
+                <toolsjar>${java.home}/../lib/tools.jar</toolsjar>
+            </properties>
+        </profile>
+        <profile>
+            <id>osx_profile</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <properties>
+                <toolsjar>${java.home}/../Classes/classes.jar</toolsjar>
+            </properties>
+        </profile>
+    </profiles>
     <properties>
-        	<slf4j.version>1.7.1</slf4j.version>
-    	</properties>
-	    <dependencies>
-	        <dependency>
-	            <groupId>org.slf4j</groupId>
-	            <artifactId>slf4j-log4j12</artifactId>
-	            <version>${slf4j.version}</version>
-	        </dependency>
-	        <dependency>
-	            <groupId>org.slf4j</groupId>
-	            <artifactId>jcl-over-slf4j</artifactId>
-	            <version>${slf4j.version}</version>
-	        </dependency>
-	    </dependencies>
-	    <modules>
-	    	<module>istanbus-core</module>
-            <module>istanbus-thrift-api</module>
-        </modules>
+        <slf4j.version>1.7.1</slf4j.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+    </dependencies>
+    <modules>
+        <module>istanbus-core</module>
+        <module>istanbus-thrift-api</module>
+    </modules>
 </project>
