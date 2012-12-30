@@ -24,13 +24,14 @@ function_info('recommend', reply_type) ->
 function_info('recommend', exceptions) ->
   {struct, []}
 ;
-% stop_search(This, Keyword)
-function_info('stop_search', params_type) ->
-  {struct, [{1, string}]}
+% search(This, Index, Keyword)
+function_info('search', params_type) ->
+  {struct, [{1, string},
+          {2, string}]}
 ;
-function_info('stop_search', reply_type) ->
+function_info('search', reply_type) ->
   string;
-function_info('stop_search', exceptions) ->
+function_info('search', exceptions) ->
   {struct, []}
 ;
 function_info(_Func, _Info) -> no_function.
