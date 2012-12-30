@@ -9,7 +9,7 @@ load_all() ->
     BusList.
 
 load_by_id(BusId) ->
-    Result = emongo:find_one(pool_mongo, "bus", [{"id", BusId}], [{fieldsnoid, ["id", "stops_go", "time", "stops_come", "notes"]}]),
+    Result = emongo:find_one(pool_mongo, "bus", [{"id", BusId}], [{fieldsnoid, ["id", "name", "stops_go", "time", "stops_come", "notes"]}]),
     get_first(Result).
 
 load_stopscome(BusId) ->
