@@ -28,25 +28,26 @@ public class SearchIndexServiceImpl implements SearchIndexService {
 
     private static final Logger logger = LoggerFactory.getLogger(SearchIndexServiceImpl.class);
 
-    private String indexPath;
+    private String indexRoot;
     private GraphDatabaseService db;
     private BusJsonParser busJsonParser;
 
     @Inject
-    public SearchIndexServiceImpl(@Named("search.index.file.path") String indexPath, BusJsonParser busJsonParser) {
-        this.indexPath = indexPath;
+    public SearchIndexServiceImpl(@Named("search.index.root.path") String indexRoot, BusJsonParser busJsonParser) {
+        this.indexRoot = indexRoot;
         this.busJsonParser = busJsonParser;
     }
 
-    public IndexWriter openWriter() {
-        File indexFolder = new File(indexPath);
+    public IndexWriter openWriter(String index) {
+        String indexDir = indexRoot + index;
+        File indexFolder = new File(indexDir);
         if (indexFolder.exists()) {
 
-            logger.info("index folder already exists at {}, deleting", indexPath);
             FileUtils.deleteDirectory(indexFolder);
+            logger.info("index folder already exists at {}, deleted", indexDir);
 
-            logger.info("index folder creating at {}", indexPath);
             indexFolder.mkdirs();
+            logger.info("index folder created at {}", indexDir);
         }
         FSDirectory directory = null;
         try {
@@ -85,7 +86,7 @@ public class SearchIndexServiceImpl implements SearchIndexService {
         Set<String> indexedStops = new HashSet<String>();
 
         // NPE is ok
-        IndexWriter indexWriter = openWriter();
+        IndexWriter stopIndexWriter = openWriter("stop");
         for (Bus bus : busList) {
             List<Stop> stops = bus.getStopsGo();
             for (Stop stop : stops) {
@@ -94,7 +95,7 @@ public class SearchIndexServiceImpl implements SearchIndexService {
                 {
                     Document document = getDocument(stop);
                     try {
-                        indexWriter.addDocument(document);
+                        stopIndexWriter.addDocument(document);
                     } catch (IOException e) {
                         logger.error("error while adding document", e);
                     }
@@ -102,11 +103,11 @@ public class SearchIndexServiceImpl implements SearchIndexService {
             }
         }
         try {
-            logger.info("{} stops indexed", indexWriter.numDocs());
+            logger.info("{} stops indexed", stopIndexWriter.numDocs());
         } catch (IOException e) {
             logger.error("error while getting doc count");
         }
-        closeWriter(indexWriter);
+        closeWriter(stopIndexWriter);
 
     }
 

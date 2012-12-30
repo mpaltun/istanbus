@@ -27,16 +27,18 @@ import java.util.List;
 public class SearchServiceImpl implements SearchService {
 
     private static final Logger logger = LoggerFactory.getLogger(SearchServiceImpl.class);
-    private final IndexSearcher searcher;
+    private final IndexSearcher stopSearcher;
     private SearchIndexServiceImpl searchIndexService;
+    private String indexRoot;
 
     @Inject
-    public SearchServiceImpl(@Named("search.index.file.path") String indexPath) {
-        searcher = initSearcher(indexPath);
+    public SearchServiceImpl(@Named("search.index.root.path") String indexRoot) {
+        this.indexRoot = indexRoot;
+        stopSearcher = initSearcher("stop");
     }
 
-    private IndexSearcher initSearcher(String indexPath) {
-        File indexFolder = new File(indexPath);
+    private IndexSearcher initSearcher(String index) {
+        File indexFolder = new File(indexRoot + index);
         if (!indexFolder.exists()) {
             indexFolder.mkdirs();
         }
@@ -72,7 +74,7 @@ public class SearchServiceImpl implements SearchService {
         TopDocs hits = null;
         logger.info("searching stop for keyword {}", keyword);
         try {
-            hits = searcher.search(query, 5);
+            hits = stopSearcher.search(query, 5);
         } catch (IOException e) {
             logger.error("error while searching", e);
         }
@@ -95,9 +97,9 @@ public class SearchServiceImpl implements SearchService {
     private StopSearchResult getStopFromDoc(ScoreDoc scoreDoc) {
         Document doc = null;
         try {
-            doc = searcher.doc(scoreDoc.doc);
+            doc = stopSearcher.doc(scoreDoc.doc);
         } catch (IOException e) {
-            logger.error("error while getting doc from searcher", e);
+            logger.error("error while getting doc from stopSearcher", e);
         }
 
         StopSearchResult result = null;
