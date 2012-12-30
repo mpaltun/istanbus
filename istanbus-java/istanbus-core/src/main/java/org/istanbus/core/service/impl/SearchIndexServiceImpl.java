@@ -112,11 +112,23 @@ public class SearchIndexServiceImpl implements SearchIndexService {
 
     private Document getDocument(Stop stop) {
         Field id = new Field("id", stop.getCode(), Field.Store.YES, Field.Index.NOT_ANALYZED);
-        Field name = new Field("name", stop.getName(), Field.Store.YES, Field.Index.ANALYZED);
+        Field name = new Field("name", stop.getName(), Field.Store.YES, Field.Index.NOT_ANALYZED);
 
         Document document = new Document();
         document.add(id);
         document.add(name);
+
+        String text = stop.getName().toLowerCase();
+        text = text + " " + text
+                .replace('ü', 'u')
+                .replace('ı', 'i')
+                .replace('ş', 's')
+                .replace('ç', 'c')
+                .replace('ö', 'o')
+                .replace('ğ', 'g');
+
+        Field textField = new Field("text", text, Field.Store.NO, Field.Index.ANALYZED);
+        document.add(textField);
 
         return document;
     }

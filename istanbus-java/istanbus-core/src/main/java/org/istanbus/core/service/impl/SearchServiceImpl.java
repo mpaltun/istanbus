@@ -62,7 +62,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public List<StopSearchResult> searchStop(String keyword) {
-        QueryParser queryParser = new QueryParser(Version.LUCENE_36, "name", new StandardAnalyzer(Version.LUCENE_36));
+        QueryParser queryParser = new QueryParser(Version.LUCENE_36, "text", new StandardAnalyzer(Version.LUCENE_36));
         Query query = null;
         try {
             query = queryParser.parse(keyword + "*");

@@ -33,4 +33,13 @@ public class SearchServiceTest {
         logger.info("{} stops found for search: {}", results.size(), keyword);
         Assert.assertFalse(results.isEmpty());
     }
+
+    @Test
+    public void enTrKeywordTest() {
+        String keywordEn = "uskudar";
+        String keywordTr = "üsküdar";
+        List<StopSearchResult> resultsEn = searchService.searchStop(keywordEn);
+        List<StopSearchResult> resultsTr = searchService.searchStop(keywordTr);
+        Assert.assertEquals(resultsEn.size(), resultsTr.size());
+    }
 }
