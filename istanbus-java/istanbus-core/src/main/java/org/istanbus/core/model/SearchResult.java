@@ -1,10 +1,10 @@
 package org.istanbus.core.model;
 
-public class StopSearchResult {
+public class SearchResult {
     private String id;
     private String name;
 
-    public StopSearchResult(String id, String name) {
+    public SearchResult(String id, String name) {
         this.id = id;
         this.name = name;
     }
@@ -27,7 +27,7 @@ public class StopSearchResult {
 
     @Override
     public String toString() {
-        return "StopSearchResult{" +
+        return "SearchResult{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 '}';

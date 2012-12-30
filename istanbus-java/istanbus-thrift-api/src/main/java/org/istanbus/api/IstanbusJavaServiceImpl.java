@@ -3,7 +3,7 @@ package org.istanbus.api;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import org.apache.thrift.TException;
-import org.istanbus.core.model.StopSearchResult;
+import org.istanbus.core.model.SearchResult;
 import org.istanbus.core.model.Transport;
 import org.istanbus.core.service.PathFinderService;
 import org.istanbus.core.service.SearchService;
@@ -34,7 +34,7 @@ public class IstanbusJavaServiceImpl implements IstanbusJavaService.Iface {
     }
 
     @Override
-    public String stop_search(String keyword) throws TException {
+    public String search(String index, String keyword) throws TException {
         String decodedKeyword;
         try {
             decodedKeyword = URLDecoder.decode(keyword, "UTF-8");
@@ -42,7 +42,7 @@ public class IstanbusJavaServiceImpl implements IstanbusJavaService.Iface {
             logger.error("exception while decoding {}", e);
             return "[]";
         }
-        List<StopSearchResult> results = searchService.searchStop(decodedKeyword);
+        List<SearchResult> results = searchService.search(index, decodedKeyword);
         return new Gson().toJson(results);
     }
 }

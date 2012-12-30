@@ -24,7 +24,7 @@ public class SearchIndexerTest {
     @Test
     public void testSearchIndex() {
         try {
-            searchIndexService.indexStopFromBusJson("/Users/mustafa/bus.json");
+            searchIndexService.indexFromBusJson("/Users/mustafa/bus.json");
             Assert.assertTrue(true);
         } catch (IOException e) {
             Assert.fail(e.getMessage());

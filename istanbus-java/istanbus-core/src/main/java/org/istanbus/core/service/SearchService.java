@@ -1,10 +1,10 @@
 package org.istanbus.core.service;
 
-import org.istanbus.core.model.StopSearchResult;
+import org.istanbus.core.model.SearchResult;
 
 import java.util.List;
 
 public interface SearchService {
 
-    List<StopSearchResult> searchStop(String keyword);
+    List<SearchResult> search(String index, String keyword);
 }

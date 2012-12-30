@@ -80,58 +80,95 @@ public class SearchIndexServiceImpl implements SearchIndexService {
     }
 
     @Override
-    public void indexStopFromBusJson(String jsonPath) {
+    public void indexFromBusJson(String jsonPath) {
         List<Bus> busList = busJsonParser.parse(jsonPath);
 
         Set<String> indexedStops = new HashSet<String>();
 
         // NPE is ok
         IndexWriter stopIndexWriter = openWriter("stop");
+        IndexWriter busIndexWriter = openWriter("bus");
         for (Bus bus : busList) {
+
+            String busCode = bus.getCode();
+            String busName = bus.getName();
+
+            String[] busTextFields = { busCode, busName };
+
+            Document busDoc = getDocument(busCode, busName, busTextFields);
+            addDocumentToIndexWriter(busIndexWriter, busDoc);
+
             List<Stop> stops = bus.getStopsGo();
             for (Stop stop : stops) {
                 // ensure not indexed already
-                if (indexedStops.add(stop.getCode()))
-                {
-                    Document document = getDocument(stop);
-                    try {
-                        stopIndexWriter.addDocument(document);
-                    } catch (IOException e) {
-                        logger.error("error while adding document", e);
-                    }
+                String stopCode = stop.getCode();
+                if (indexedStops.add(stopCode)) {
+                    String stopName = stop.getName();
+                    String[] stopTextFields = { stopName };
+                    Document stopDoc = getDocument(stopCode, stopName, stopTextFields);
+                    addDocumentToIndexWriter(stopIndexWriter, stopDoc);
                 }
             }
         }
+
         try {
             logger.info("{} stops indexed", stopIndexWriter.numDocs());
         } catch (IOException e) {
             logger.error("error while getting doc count");
         }
         closeWriter(stopIndexWriter);
+        closeWriter(busIndexWriter);
 
     }
 
-    private Document getDocument(Stop stop) {
-        Field id = new Field("id", stop.getCode(), Field.Store.YES, Field.Index.NOT_ANALYZED);
-        Field name = new Field("name", stop.getName(), Field.Store.YES, Field.Index.NOT_ANALYZED);
+    private Document getDocument(String id, String name, String... textFields) {
+        Field idField = new Field("id", id, Field.Store.YES, Field.Index.NOT_ANALYZED);
+        Field nameField = new Field("name", name, Field.Store.YES, Field.Index.NOT_ANALYZED);
 
         Document document = new Document();
-        document.add(id);
-        document.add(name);
+        document.add(idField);
+        document.add(nameField);
 
-        String text = stop.getName().toLowerCase();
-        text = text + " " + text
+        String text = prepareSearchIndexText(textFields);
+        Field textField = new Field("text", text, Field.Store.NO, Field.Index.ANALYZED);
+        document.add(textField);
+
+        return document;
+    }
+
+    private String prepareSearchIndexText(String... strings) {
+        StringBuilder sb = new StringBuilder();
+
+        for (String s : strings) {
+            String string = s.toLowerCase();
+
+            String asciiString = toASCIIString(string);
+            sb.append(string);
+
+            if (!string.equals(asciiString)) {
+                sb.append(" ").append(asciiString);
+            }
+        }
+
+        return sb.toString();
+    }
+
+    private void addDocumentToIndexWriter(IndexWriter indexWriter, Document document) {
+        try {
+            indexWriter.addDocument(document);
+        } catch (IOException e) {
+            logger.error("error while adding document", e);
+        }
+    }
+
+    private String toASCIIString(String string) {
+        return string
                 .replace('ü', 'u')
                 .replace('ı', 'i')
                 .replace('ş', 's')
                 .replace('ç', 'c')
                 .replace('ö', 'o')
                 .replace('ğ', 'g');
-
-        Field textField = new Field("text", text, Field.Store.NO, Field.Index.ANALYZED);
-        document.add(textField);
-
-        return document;
     }
 
 }

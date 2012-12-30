@@ -14,7 +14,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
-import org.istanbus.core.model.StopSearchResult;
+import org.istanbus.core.model.SearchResult;
 import org.istanbus.core.service.SearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,19 +22,28 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SearchServiceImpl implements SearchService {
 
     private static final Logger logger = LoggerFactory.getLogger(SearchServiceImpl.class);
-    private final IndexSearcher stopSearcher;
+    private Map<String, IndexSearcher> searchers;
     private SearchIndexServiceImpl searchIndexService;
     private String indexRoot;
 
     @Inject
     public SearchServiceImpl(@Named("search.index.root.path") String indexRoot) {
         this.indexRoot = indexRoot;
-        stopSearcher = initSearcher("stop");
+
+        IndexSearcher stopSearcher = initSearcher("stop");
+        IndexSearcher busSearcher = initSearcher("bus");
+
+        searchers = new HashMap<String, IndexSearcher>();
+        searchers.put("stop", stopSearcher);
+        searchers.put("bus", busSearcher);
     }
 
     private IndexSearcher initSearcher(String index) {
@@ -63,7 +72,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public List<StopSearchResult> searchStop(String keyword) {
+    public List<SearchResult> search(String index, String keyword) {
         QueryParser queryParser = new QueryParser(Version.LUCENE_36, "text", new StandardAnalyzer(Version.LUCENE_36));
         Query query = null;
         try {
@@ -71,43 +80,48 @@ public class SearchServiceImpl implements SearchService {
         } catch (ParseException e) {
             logger.error("error while parsing query", e);
         }
+        IndexSearcher searcher = searchers.get(index);
+        if (searcher == null)
+        {
+            return Collections.emptyList();
+        }
         TopDocs hits = null;
-        logger.info("searching stop for keyword {}", keyword);
+        logger.info("searching {} for keyword {}", index, keyword);
         try {
-            hits = stopSearcher.search(query, 5);
+            hits = searcher.search(query, 5);
         } catch (IOException e) {
             logger.error("error while searching", e);
         }
 
         ScoreDoc[] scoreDocs = hits.scoreDocs;
-        List<StopSearchResult> results = getStopsFromDocs(scoreDocs);
+        List<SearchResult> results = getResultsFromDocs(searcher, scoreDocs);
 
         return results;
     }
 
-    private List<StopSearchResult> getStopsFromDocs(ScoreDoc[] docs) {
-        List<StopSearchResult> results = new ArrayList<StopSearchResult>();
+    private List<SearchResult> getResultsFromDocs(IndexSearcher searcher, ScoreDoc[] docs) {
+        List<SearchResult> results = new ArrayList<SearchResult>();
         for (ScoreDoc doc : docs) {
-            StopSearchResult result = getStopFromDoc(doc);
+            SearchResult result = getResultFromDoc(searcher, doc);
             results.add(result);
         }
         return results;
     }
 
-    private StopSearchResult getStopFromDoc(ScoreDoc scoreDoc) {
+    private SearchResult getResultFromDoc(IndexSearcher searcher, ScoreDoc scoreDoc) {
         Document doc = null;
         try {
-            doc = stopSearcher.doc(scoreDoc.doc);
+            doc = searcher.doc(scoreDoc.doc);
         } catch (IOException e) {
             logger.error("error while getting doc from stopSearcher", e);
         }
 
-        StopSearchResult result = null;
+        SearchResult result = null;
         if (doc != null) {
             String id = doc.get("id");
             String name = doc.get("name");
 
-            result = new StopSearchResult(id, name);
+            result = new SearchResult(id, name);
         }
 
         return result;
