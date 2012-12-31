@@ -3,12 +3,10 @@ package org.istanbus.core.service.impl;
 import com.google.inject.Inject;
 import org.istanbus.core.db.GraphDB;
 import org.istanbus.core.model.Transport;
-import org.istanbus.core.model.graph.RelationShip;
 import org.istanbus.core.model.node.Stop;
 import org.istanbus.core.service.PathFinderService;
 import org.neo4j.graphalgo.GraphAlgoFactory;
 import org.neo4j.graphalgo.PathFinder;
-import org.neo4j.graphalgo.WeightedPath;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.kernel.Traversal;
@@ -49,7 +47,7 @@ public class PathFinderServiceImpl implements PathFinderService {
     private Stop getStopFromNode(Node node)
     {
         Stop stop = new Stop();
-        stop.setCode((String) node.getProperty("code"));
+        stop.setId((String) node.getProperty("code"));
         stop.setName((String) node.getProperty("label"));
 
         return stop;

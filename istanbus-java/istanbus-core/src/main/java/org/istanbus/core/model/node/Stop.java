@@ -1,43 +1,38 @@
 package org.istanbus.core.model.node;
 
-public class Stop
-{
-    private String code;
+public class Stop {
+
+    private String id;
     private String name;
 
-    public Stop(String code, String name)
-    {
-        this.code = code;
+    public Stop(String id, String name) {
+        this.id = id;
         this.name = name;
     }
 
     public Stop() {
     }
 
-    public String getCode()
-    {
-        return code;
+    public String getId() {
+        return id;
     }
 
-    public void setCode(String code)
-    {
-        this.code = code;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
     @Override
     public String toString() {
         return "Stop{" +
-                "code='" + code + '\'' +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 '}';
     }

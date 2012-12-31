@@ -101,7 +101,7 @@ public class SearchIndexServiceImpl implements SearchIndexService {
             List<Stop> stops = bus.getStopsGo();
             for (Stop stop : stops) {
                 // ensure not indexed already
-                String stopCode = stop.getCode();
+                String stopCode = stop.getId();
                 if (indexedStops.add(stopCode)) {
                     String stopName = stop.getName();
                     String[] stopTextFields = { stopName };

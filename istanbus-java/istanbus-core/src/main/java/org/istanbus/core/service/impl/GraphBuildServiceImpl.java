@@ -95,7 +95,7 @@ public class GraphBuildServiceImpl implements GraphBuildService {
                 } else {
                     nodes[2] = createNodeFromStop(s);
 
-                    if (!stop.getCode().equals(s.getCode()))
+                    if (!stop.getId().equals(s.getId()))
                     {
                         logger.info("Linking stop {} to stop {}", nodes[1].getProperty(label), nodes[2].getProperty(label));
                         Relationship relationship = nodes[1].createRelationshipTo(nodes[2], RelationShip.DIRECTION_GO);
@@ -120,25 +120,25 @@ public class GraphBuildServiceImpl implements GraphBuildService {
     private Node createNodeFromStop(Stop stop) {
 
         // check existance
-        IndexHits<Node> nodes = stopIndex.get(code, stop.getCode());
+        IndexHits<Node> nodes = stopIndex.get(code, stop.getId());
 
         Node node = null;
         if (nodes.size() > 0)
         {
             node = nodes.iterator().next();
-            logger.info("Stop {} found on index", stop.getCode());
+            logger.info("Stop {} found on index", stop.getId());
         }
 
         // if still null then create
         if (node == null)
         {
-            logger.info("Stop {} not found on index, so creating new one", stop.getCode());
+            logger.info("Stop {} not found on index, so creating new one", stop.getId());
             node = db.createNode();
             node.setProperty(label, stop.getName());
-            node.setProperty(code, stop.getCode());
+            node.setProperty(code, stop.getId());
 
             // add to index
-            stopIndex.add(node, code, stop.getCode());
+            stopIndex.add(node, code, stop.getId());
         }
 
         return node;

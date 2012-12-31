@@ -38,8 +38,8 @@ public class PathFindTest {
         Transport first = transports.get(0);
         Transport last = transports.get(transports.size() - 1);
 
-        Assert.assertEquals(from, first.getFrom().getCode());
-        Assert.assertEquals(to, last.getTo().getCode());
+        Assert.assertEquals(from, first.getFrom().getId());
+        Assert.assertEquals(to, last.getTo().getId());
     }
 
 }
