@@ -1,32 +1,39 @@
 istanbus
 ========
 
-istanbus rest api
+## Routes  
 
-Routes  
+### Bus
 
-# Bus
+```
+GET /bus/{id}
+GET /bus/{id}/stops/go
+GET /bus/{id}/stops/come
+GET /bus/{id}/timesheet
+```
 
-## GET /bus/{id}
-## GET /bus/{id}/stops/go
-## GET /bus/{id}/stops/come
-## GET /bus/{id}/timesheet
+### Stop
 
-
-# Stop
-
-## GET /stop/{id}
-
-
-# Search
-
-## GET /search/bus/{id or keyword}
-## GET /search/stop/{keyword}
+```
+GET /stop/{id}
+```
 
 
-# Solutions
-## GET /howtogo/from/{stop_id}/to/{stop_id}
+### Search
+
+```
+GET /search/bus/{id or keyword}
+GET /search/stop/{keyword}
+```
 
 
-# Closest stops
-## GET /closest/lat/{latitude}/lon/{longitude}
+### Solutions
+```
+GET /howtogo/from/{stop_id}/to/{stop_id}
+```
+
+
+### Closest stops
+```
+GET /closest/lat/{latitude}/lon/{longitude}
+```
