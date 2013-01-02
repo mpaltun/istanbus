@@ -5,7 +5,7 @@
 load_by_id(StopId)  ->
     BusList = istanbus_core_bus_module:load_by_stop(StopId),
     Stop = get_first(emongo:find_one(pool_mongo, "stop", [{"id", StopId}], [{fieldsnoid, ["id", "name"]}])),
-    [{ <<"bus">>,  BusList } | Stop].
+    [{ <<"bus_list">>,  BusList } | Stop].
     
 
 search(Keywords)     ->
