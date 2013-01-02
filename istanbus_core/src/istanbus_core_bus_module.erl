@@ -30,16 +30,16 @@ load_by_stop(StopId) ->
 
 % internal api
 
-get_first(Result) ->
-    get_first(Result, null).
-
-
-get_first([H | _], null) ->
+get_first([H | _]) ->
     H;
+get_first([]) ->
+    {struct, []}.
+
+
 get_first([H | _], Field) ->
     proplists:get_value(Field, H);
 get_first([], _Field) ->
-    {struct, []}.
+    [].
 
 load_bus_with_fields(BusId, Fields) ->
     emongo:find_one(pool_mongo, "bus", [{"id", BusId}], [{fieldsnoid, Fields}]).
