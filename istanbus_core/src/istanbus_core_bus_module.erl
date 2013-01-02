@@ -1,7 +1,7 @@
 -module(istanbus_core_bus_module).
 
 -export([load_all/0, load_by_id/1, load_stopsgo/1,
-            load_stopscome/1, load_timesheet/1]).
+            load_stopscome/1, load_timesheet/1, load_by_stop/1]).
 
 load_all() ->
     Result = load_by_id("all"),
@@ -23,6 +23,11 @@ load_stopsgo(BusId) ->
 load_timesheet(BusId) ->
     Result = load_bus_with_fields(BusId, ["time"]),
     proplists:get_value(<<"time">>, get_first(Result)).
+
+load_by_stop(StopId) ->
+    % db.bus.find({"stops_go.id" : "A0280"}, {id : 1, _id : 0});
+    emongo:find(pool_mongo, "bus", [{"stops_go.id", StopId}], [{fieldsnoid, ["id", "name"]}]).
+
 % internal api
 get_first([H | _]) ->
     H;
