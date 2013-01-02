@@ -1,6 +1,6 @@
 -module(istanbus_core_stop_module).
 
--export([load_by_id/1, search/1, search_and_get_location/1, find_closest/2]).
+-export([load_by_id/1, search/1, find_closest/2]).
 
 load_by_id(StopId)  ->
     BusList = istanbus_core_bus_module:load_by_stop(StopId),
@@ -11,11 +11,6 @@ load_by_id(StopId)  ->
 search(Keywords)     ->
     Query = prepare_query(Keywords, []),
     emongo:find(pool_mongo, "stop", Query, [{limit, 20}, {fieldsnoid, ["id", "name"]}]).
-
-search_and_get_location(Keywords)   ->
-    Query = prepare_query(Keywords, []),
-    Result = emongo:find(pool_mongo, "stop", Query, [{limit, 1}, {fieldsnoid, ["id"]}]),
-    result(Result).
 
 find_closest(Lat, Lon) ->
     Query = [{"location", [{near, [Lat, Lon]}]}],
