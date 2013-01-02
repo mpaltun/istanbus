@@ -14,24 +14,31 @@ load_by_id(BusId) ->
 
 load_stopscome(BusId) ->
     Result = load_bus_with_fields(BusId, ["stops_come"]),
-    proplists:get_value(<<"stops_come">>, get_first(Result)).
+    get_first(Result, <<"stops_come">>).
 
 load_stopsgo(BusId) ->
     Result = load_bus_with_fields(BusId, ["stops_go"]),
-    proplists:get_value(<<"stops_go">>, get_first(Result)).
+    get_first(Result, <<"stops_go">>).
 
 load_timesheet(BusId) ->
     Result = load_bus_with_fields(BusId, ["time"]),
-    proplists:get_value(<<"time">>, get_first(Result)).
+    get_first(Result, <<"time">>).
 
 load_by_stop(StopId) ->
     % db.bus.find({"stops_go.id" : "A0280"}, {id : 1, _id : 0});
     emongo:find(pool_mongo, "bus", [{"stops_go.id", StopId}], [{fieldsnoid, ["id", "name"]}]).
 
 % internal api
-get_first([H | _]) ->
+
+get_first(Result) ->
+    get_first(Result, null).
+
+
+get_first([H | _], null) ->
     H;
-get_first([]) ->
+get_first([H | _], Field) ->
+    proplists:get_value(Field, H);
+get_first([], _Field) ->
     {struct, []}.
 
 load_bus_with_fields(BusId, Fields) ->

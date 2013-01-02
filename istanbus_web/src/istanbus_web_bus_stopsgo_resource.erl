@@ -16,7 +16,7 @@ content_types_provided(ReqData, Context) ->
 to_json(ReqData, Context) ->
     case wrq:path_info(id, ReqData) of
         BusId ->
-			DecodedBusId = unicode:characters_to_list(list_to_binary(http_uri:decode(BusId)), utf8),
+            DecodedBusId = unicode:characters_to_list(list_to_binary(http_uri:decode(BusId)), utf8),
             Stops = istanbus_core_bus_module:load_stopsgo(DecodedBusId),
             {mochijson2:encode(Stops), ReqData, Context}
     end.
