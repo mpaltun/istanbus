@@ -3,7 +3,10 @@
 -export([load_by_id/1, search/1, search_and_get_location/1, find_closest/2]).
 
 load_by_id(StopId)  ->
-    get_first(emongo:find_one(pool_mongo, "stop", [{"id", StopId}], [{fieldsnoid, ["id", "name", "bus_list"]}])).
+    BusList = istanbus_core_bus_module:load_by_stop(StopId),
+    Stop = get_first(emongo:find_one(pool_mongo, "stop", [{"id", StopId}], [{fieldsnoid, ["id", "name"]}])),
+    [{ <<"bus">>,  BusList } | Stop].
+    
 
 search(Keywords)     ->
     Query = prepare_query(Keywords, []),

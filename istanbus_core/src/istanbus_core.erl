@@ -27,7 +27,7 @@ start_link() ->
 start() ->
     ensure_started(crypto),
     ensure_started(emongo),
-    emongo:add_pool(pool_mongo, "localhost", 27017, "istanbus_2012-12-30", 10),
+    emongo:add_pool(pool_mongo, "localhost", 27017, "istanbus_2013-01-02", 5),
     application:start(istanbus_core).
 
 %% @spec stop() -> ok
