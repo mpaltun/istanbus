@@ -2,7 +2,7 @@
 %% @copyright 2012 mpaltun.
 %% @doc istanbus webmachine_resource.
 
--module(istanbus_web_howtogo_resource).
+-module(istanbus_web_find_path_resource).
 -export([init/1, to_json/2, content_types_provided/2]).
 
 -include_lib("webmachine/include/webmachine.hrl").
@@ -20,5 +20,5 @@ to_json(ReqData, Context) ->
     DecodedFrom = http_uri:decode(From),
     DecodedTo = http_uri:decode(To),
     
-    Result = istanbus_thrift_bridge:recommend(DecodedFrom, DecodedTo),
+    Result = istanbus_thrift_bridge:find_path(DecodedFrom, DecodedTo),
     {Result, ReqData, Context}.

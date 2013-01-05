@@ -31,7 +31,7 @@ GET /search/stop/{keyword}
 
 ### Solutions
 ```
-GET /howtogo/from/{stop_id}/to/{stop_id}
+GET /path/from/{stop_id}/to/{stop_id}
 ```
 
 
