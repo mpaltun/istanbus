@@ -29,7 +29,7 @@ GET /search/stop/{keyword}
 ```
 
 
-### Solutions
+### Path Finding
 ```
 GET /path/from/{stop_id}/to/{stop_id}
 ```
