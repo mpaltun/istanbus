@@ -1,5 +1,4 @@
-busList = db.bus.find({}, {_id: 0, stops_go: 1, stops_turn: 1});
-busList.forEach(function (bus) {
+db.bus.find({}, {_id: 0, stops_go: 1, stops_turn: 1}).forEach(function (bus) {
     bus.stops_go.forEach(function (stop) {
         db.stop.insert(stop)
     });
