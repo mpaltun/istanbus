@@ -1,7 +1,6 @@
 -module(istanbus_core_bus_module).
 
--export([load_all/0, load_by_id/1, load_stopsgo/1,
-            load_stopscome/1, load_timesheet/1, load_by_stop/1]).
+-export([load_all/0, load_by_id/1, load_stops/2, load_timesheet/1, load_by_stop/1]).
 
 load_all() ->
     Result = load_by_id("all"),
@@ -9,16 +8,17 @@ load_all() ->
     BusList.
 
 load_by_id(BusId) ->
-    Result = emongo:find_one(pool_mongo, "bus", [{"id", BusId}], [{fieldsnoid, ["id", "name", "stops_go", "time", "stops_come", "notes"]}]),
+    Result = emongo:find_one(pool_mongo, "bus", [{"id", BusId}], [{fieldsnoid, ["id", "name", "stops_go", "time", "stops_turn", "notes"]}]),
     get_first(Result).
 
-load_stopscome(BusId) ->
-    Result = load_bus_with_fields(BusId, ["stops_come"]),
-    get_first(Result, <<"stops_come">>).
+load_stops(BusId, Direction) when Direction =:= "go" orelse Direction =:= "turn" ->
+    %% Direction go | turn
+    Field = "stops_" ++ Direction,
+    Result = load_bus_with_fields(BusId, [Field]),
+    get_first(Result, list_to_binary(Field));
 
-load_stopsgo(BusId) ->
-    Result = load_bus_with_fields(BusId, ["stops_go"]),
-    get_first(Result, <<"stops_go">>).
+load_stops(_BusId, _Direction) ->
+    [].
 
 load_timesheet(BusId) ->
     Result = load_bus_with_fields(BusId, ["time"]),
