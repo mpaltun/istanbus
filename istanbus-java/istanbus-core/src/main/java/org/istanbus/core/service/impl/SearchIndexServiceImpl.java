@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -98,7 +99,10 @@ public class SearchIndexServiceImpl implements SearchIndexService {
             Document busDoc = getDocument(busCode, busName, busTextFields);
             addDocumentToIndexWriter(busIndexWriter, busDoc);
 
-            List<Stop> stops = bus.getStopsGo();
+            List<Stop> stops = new ArrayList<Stop>();
+            stops.addAll(bus.getStopsGo());
+            stops.addAll(bus.getStopsTurn());
+
             for (Stop stop : stops) {
                 // ensure not indexed already
                 String stopCode = stop.getId();

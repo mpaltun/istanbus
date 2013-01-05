@@ -125,14 +125,14 @@ public class GraphBuildServiceImpl implements GraphBuildService {
         Node node = null;
         if (nodes.size() > 0)
         {
+            // stop found on index
             node = nodes.iterator().next();
-            logger.info("Stop {} found on index", stop.getId());
         }
 
         // if still null then create
         if (node == null)
         {
-            logger.info("Stop {} not found on index, so creating new one", stop.getId());
+            // stop not found on index, so creating new one
             node = db.createNode();
             node.setProperty(label, stop.getName());
             node.setProperty(code, stop.getId());
