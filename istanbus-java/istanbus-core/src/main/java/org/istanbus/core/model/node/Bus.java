@@ -7,7 +7,7 @@ public class Bus
     private String code;
     private String name;
     private List<Stop> stopsGo;
-    private List<Stop> stopsCome;
+    private List<Stop> stopsTurn;
 
     public String getCode()
     {
@@ -39,14 +39,14 @@ public class Bus
         this.stopsGo = stopsGo;
     }
 
-    public List<Stop> getStopsCome()
+    public List<Stop> getStopsTurn()
     {
-        return stopsCome;
+        return stopsTurn;
     }
 
-    public void setStopsCome(List<Stop> stopsCome)
+    public void setStopsTurn(List<Stop> stopsTurn)
     {
-        this.stopsCome = stopsCome;
+        this.stopsTurn = stopsTurn;
     }
 
     @Override
@@ -54,8 +54,8 @@ public class Bus
     {
         StringBuilder builder = new StringBuilder();
         builder
-            .append("Bus [code : ").append(code).append(", name : ").append(name).append(", stopsGo : ").append(stopsGo).append(", stopsCome : ")
-            .append(stopsCome).append("]");
+            .append("Bus [code : ").append(code).append(", name : ").append(name).append(", stopsGo : ").append(stopsGo).append(", stopsTurn : ")
+            .append(stopsTurn).append("]");
         return builder.toString();
     }
 

@@ -34,15 +34,15 @@ public class BusJsonParser
             JsonObject bus = (JsonObject) element;
             String code = bus.get("id").getAsString();
             String name = bus.get("name").getAsString();
-            JsonArray stopsComeJson = (JsonArray) bus.get("stops_come");
-            List<Stop> stopsCome = parseStops(stopsComeJson);
+            JsonArray stopsTurnJson = (JsonArray) bus.get("stops_turn");
+            List<Stop> stopsTurn = parseStops(stopsTurnJson);
             JsonArray stopsGoJson = (JsonArray) bus.get("stops_go");
             List<Stop> stopsGo = parseStops(stopsGoJson);
             
             b.setCode(code);
             b.setName(name);
             b.setStopsGo(stopsGo);
-            b.setStopsCome(stopsCome);
+            b.setStopsTurn(stopsTurn);
             list.add(b);
         }
         return list; 
