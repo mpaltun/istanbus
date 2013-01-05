@@ -7,21 +7,21 @@ class Client:
         self.url = url
 
     def get(self, sub_url, params, headers):
-        try:
-            return self.get_request(sub_url, params, headers)
-        except Exception:
-            #try once again
-            return self.get_request(sub_url, params, headers)
+        return self.request("GET", sub_url, params, headers)
 
-    def get_request(self, sub_url, params, headers):
-        connection = httplib.HTTPConnection(self.url)
-        connection.request("GET", sub_url, params, headers)
-        return connection.getresponse()
+    def request(self, method, sub_url, params, headers):
+        retry = 3
+        while (retry > 0):
+            try:
+                connection = httplib.HTTPConnection(self.url)
+                connection.request(method, sub_url, params, headers)
+                return connection.getresponse()
+            except Exception:
+                retry -= 1
+        raise Exception("request failed after 3 retries")
 
     def post(self, sub_url, params, headers):
-        connection = httplib.HTTPConnection(self.url)
-        connection.request("POST", sub_url, params, headers)
-        return connection.getresponse()
+        return self.request("POST", sub_url, params, headers)
 
     def close(self):
         pass
