@@ -179,6 +179,11 @@ if (bus_list):
                 go_stop_list = parse_stops(hrefs_go, '1')
                 turn_stop_list = parse_stops(hrefs_turn, '2')
 
+            # some bus have zero turn stops
+            if not turn_stop_list:
+                # if this is one of them, then reverse go list
+                turn_stop_list = go_stop_list[::-1]
+
             bus = { "id" : bus_code, "name" : bus_name, "stops_go" : go_stop_list, "stops_turn" : turn_stop_list,
             "time" : {"workday_go" : go_workday_time_list, "saturday_go" : go_saturday_time_list, "sunday_go" : go_sunday_time_list,
             "workday_turn" : turn_workday_time_list, "saturday_turn" : turn_saturday_time_list, "sunday_turn" : turn_sunday_time_list
