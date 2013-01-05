@@ -1,24 +1,22 @@
 package org.istanbus.core.service.impl;
 
-import java.util.List;
-
+import com.google.inject.Inject;
 import org.istanbus.core.db.GraphDB;
 import org.istanbus.core.model.graph.RelationShip;
 import org.istanbus.core.model.node.Bus;
 import org.istanbus.core.model.node.Stop;
 import org.istanbus.core.service.GraphBuildService;
 import org.istanbus.core.util.BusJsonParser;
-
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
-
-import com.google.inject.Inject;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class GraphBuildServiceImpl implements GraphBuildService {
 
@@ -42,8 +40,8 @@ public class GraphBuildServiceImpl implements GraphBuildService {
     public void buildFullGraph(List<Bus> busList) {
         for (Bus bus : busList) {
             logger.info("Stops(go) for bus: {}", bus.getCode());
-            List<Stop> stopsGo = bus.getStopsGo();
-            linkStops(bus.getCode(), stopsGo, RelationShip.DIRECTION_GO);
+            // linkStops(bus.getCode(), stopsGo, RelationShip.DIRECTION_GO);
+            linkStopsApacheStyle(bus.getCode(), bus.getStopsGo(), RelationShip.DIRECTION_GO);
         }
     }
 
@@ -82,7 +80,7 @@ public class GraphBuildServiceImpl implements GraphBuildService {
         tx.finish();
     }
 
-    private void linkStopsApacheStyle(String busCode, List<Stop> stops) {
+    private void linkStopsApacheStyle(String busCode, List<Stop> stops, RelationShip relationShip) {
         Transaction tx = db.beginTx();
         Node[] nodes = {null, null, null};
         for (int i = 0; i < stops.size(); i++) {
@@ -95,13 +93,10 @@ public class GraphBuildServiceImpl implements GraphBuildService {
                 } else {
                     nodes[2] = createNodeFromStop(s);
 
-                    if (!stop.getId().equals(s.getId()))
-                    {
-                        logger.info("Linking stop {} to stop {}", nodes[1].getProperty(label), nodes[2].getProperty(label));
-                        Relationship relationship = nodes[1].createRelationshipTo(nodes[2], RelationShip.DIRECTION_GO);
-                        relationship.setProperty("bus", busCode);
-                        relationship.setProperty("stopCount", j - i);
-                    }
+                    logger.info("Linking stop {} to stop {}", nodes[1].getProperty(label), nodes[2].getProperty(label));
+                    Relationship relationship = nodes[1].createRelationshipTo(nodes[2], relationShip);
+                    relationship.setProperty("bus", busCode);
+                    relationship.setProperty("stopCount", j - i);
 
                     tx.success();
                 }
