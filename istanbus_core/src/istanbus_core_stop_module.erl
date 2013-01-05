@@ -21,7 +21,7 @@ find_closest(Lat, Lon) ->
 get_first([H | _]) ->
     H;
 get_first([]) ->
-    {struct, []}.
+    [].
 
 
 prepare_query([], Queries) ->
