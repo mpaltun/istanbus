@@ -56,13 +56,12 @@ def parse_stops(hrefs, direction):
     return stop_list
 
 def append_to_stop_list(stop_list, stop):
-    list_length = len(stop_list)
-    if (list_length > 0):
-        last_stop = stop_list[list_length - 1]
-        # prevent duplication
-        if (last_stop['id'] != stop["id"]):
-            stop_list.append(stop)
-    else:
+    not_found = True;
+    for s in stop_list:
+        if s['id'] == stop["id"]:
+            not_found = False
+            break
+    if not_found:
         stop_list.append(stop)
     
 # output/bus.txt must be produced, check it!
