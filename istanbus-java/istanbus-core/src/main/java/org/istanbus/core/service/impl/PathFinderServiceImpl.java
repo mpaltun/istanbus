@@ -36,6 +36,8 @@ public class PathFinderServiceImpl implements PathFinderService {
     @Override
     public List<Transport> find(String fromStop, String toStop) {
 
+        logger.info("finding path from {} to {}", fromStop, toStop);
+
         Node nodeA = stopIndex.get("code", fromStop).iterator().next();
         Node nodeB = stopIndex.get("code", toStop).iterator().next();
 
