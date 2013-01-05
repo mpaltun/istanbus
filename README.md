@@ -10,7 +10,7 @@ Routes
 ```
 GET /bus/{id}
 GET /bus/{id}/stops/go
-GET /bus/{id}/stops/come
+GET /bus/{id}/stops/turn
 GET /bus/{id}/timesheet
 ```
 
