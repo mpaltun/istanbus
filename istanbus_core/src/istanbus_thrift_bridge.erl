@@ -1,8 +1,8 @@
 -module(istanbus_thrift_bridge).
 
--export([recommend/2, search/2]).
+-export([find_path/2, search/2]).
 
-recommend(From, To) ->
+find_path(From, To) ->
   Opts = [{strict_read, false}, {strict_write, false}, {framed, true}],
   {ok, Client} = thrift_client_util:new("127.0.0.1", 9090, istanbusJavaService_thrift, Opts),
   {Client2, {ok, Response}} = thrift_client:call(Client, recommend, [From, To]),
