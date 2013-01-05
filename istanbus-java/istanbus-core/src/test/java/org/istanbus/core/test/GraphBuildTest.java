@@ -5,7 +5,6 @@ import org.istanbus.core.module.CoreModule;
 import org.istanbus.core.runner.GuiceJUnitRunner;
 import org.istanbus.core.service.GraphBuildService;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -15,6 +14,8 @@ public class GraphBuildTest {
 
     private GraphBuildService graphBuildService;
 
+    private String jsonPath = "/Users/mustafa/bus.json";
+
     @Inject
     public void setService(GraphBuildService graphBuildService) {
         this.graphBuildService = graphBuildService;
@@ -22,7 +23,7 @@ public class GraphBuildTest {
 
     @Test
     public void buildGraph() throws Exception {
-        graphBuildService.buildFullGraph("/Users/mustafa/bus.json");
+        graphBuildService.buildFullGraph(jsonPath);
         Assert.assertTrue(graphBuildService.testGraph("Ş0015"));
     }
 

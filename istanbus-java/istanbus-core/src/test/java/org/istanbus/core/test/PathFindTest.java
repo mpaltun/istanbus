@@ -35,6 +35,9 @@ public class PathFindTest {
     @Test
     public void testPathFindConsistency() throws Exception {
         List<Transport> transports = pathFinderService.find(from, to);
+
+        Assert.assertFalse(transports.isEmpty());
+
         Transport first = transports.get(0);
         Transport last = transports.get(transports.size() - 1);
 
