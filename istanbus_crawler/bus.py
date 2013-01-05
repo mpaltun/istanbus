@@ -54,6 +54,16 @@ def parse_stops(hrefs, direction):
         i+=1
         stop_list.append(stop_summary)
     return stop_list
+
+def append_to_stop_list(stop_list, stop):
+    list_length = len(stop_list)
+    if (list_length > 0):
+        last_stop = stop_list[list_length - 1]
+        # prevent duplication
+        if (last_stop['id'] != stop["id"]):
+            stop_list.append(stop)
+    else:
+        stop_list.append(stop)
     
 # output/bus.txt must be produced, check it!
 f = codecs.open('output/bus.txt', encoding='utf-8')
@@ -118,9 +128,9 @@ if (bus_list):
             go_workday_time_list = bus_html.xpath(time_xpath_query.format('1'))
             go_saturday_time_list = bus_html.xpath(time_xpath_query.format('2'))
             go_sunday_time_list = bus_html.xpath(time_xpath_query.format('3'))
-            come_workday_time_list = bus_html.xpath(time_xpath_query.format('4'))
-            come_saturday_time_list = bus_html.xpath(time_xpath_query.format('5'))
-            come_sunday_time_list = bus_html.xpath(time_xpath_query.format('6'))
+            turn_workday_time_list = bus_html.xpath(time_xpath_query.format('4'))
+            turn_saturday_time_list = bus_html.xpath(time_xpath_query.format('5'))
+            turn_sunday_time_list = bus_html.xpath(time_xpath_query.format('6'))
 
             # here i am doing interesting things
             # normalize notes like […, 'hel', 'lo', 'wor', 'ld']
@@ -157,22 +167,22 @@ if (bus_list):
                 direction = qs_params['yon'][0]
                 stop_summary = {"id" : stop_code, "name" : stop_name.strip()}
                 if (direction == 'G'):
-                    go_stop_list.append(stop_summary)
+                    append_to_stop_list(go_stop_list, stop_summary)
                 elif (direction == 'D'):
-                    turn_stop_list.append(stop_summary)
+                    append_to_stop_list(turn_stop_list, stop_summary)
 
             if (len(stop_list) == 0):
                 params = "sorgu=durak&hat=" + encoded_bus_code
                 response = client.get("/hat_sorgula_v3.php3?" + params,"" , {})
                 bus_html = lxml.html.parse(response, lxml.html.HTMLParser(encoding="utf-8"))
                 hrefs_go = bus_html.xpath('//table//td[1]/table//table/tr/td[3]/a[1]/@href')
-                hrefs_come = bus_html.xpath('//table//td[2]/table//table/tr/td[3]/a[1]/@href')
+                hrefs_turn = bus_html.xpath('//table//td[2]/table//table/tr/td[3]/a[1]/@href')
                 go_stop_list = parse_stops(hrefs_go, '1')
-                turn_stop_list = parse_stops(hrefs_come, '2')
+                turn_stop_list = parse_stops(hrefs_turn, '2')
 
-            bus = { "id" : bus_code, "name" : bus_name, "stops_go" : go_stop_list, "stops_come" : turn_stop_list,
+            bus = { "id" : bus_code, "name" : bus_name, "stops_go" : go_stop_list, "stops_turn" : turn_stop_list,
             "time" : {"workday_go" : go_workday_time_list, "saturday_go" : go_saturday_time_list, "sunday_go" : go_sunday_time_list,
-            "workday_come" : come_workday_time_list, "saturday_come" : come_saturday_time_list, "sunday_come" : come_sunday_time_list
+            "workday_turn" : turn_workday_time_list, "saturday_turn" : turn_saturday_time_list, "sunday_turn" : turn_sunday_time_list
             }, "notes" : notes[2:]}
             mongo_instance.insert_bus(bus)
             print bus_code.encode("utf-8"), ' inserted'
