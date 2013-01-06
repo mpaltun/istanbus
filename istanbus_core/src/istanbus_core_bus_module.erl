@@ -25,8 +25,8 @@ load_timesheet(BusId) ->
     get_first(Result, <<"time">>).
 
 load_by_stop(StopId) ->
-    % db.bus.find({"stops_go.id" : "A0280"}, {id : 1, _id : 0});
-    emongo:find(pool_mongo, "bus", [{"stops_go.id", StopId}], [{fieldsnoid, ["id", "name"]}]).
+    Query = {"$or", [[{"stops_go.id", StopId}], [{"stops_turn.id", StopId}]]},
+    emongo:find(pool_mongo, "bus", [Query], [{fieldsnoid, ["id", "name"]}]).
 
 % internal api
 
