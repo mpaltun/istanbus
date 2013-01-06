@@ -31,9 +31,3 @@ class MongoInstance:
 
     def ensure_index_bus(self, column_name, uniq=True):
         self.db.bus.ensure_index(column_name, ASCENDING, unique=uniq)
-
-    def create_index_stop_location(self, col):
-        self.db.stop2.create_index([(col, GEO2D)])
-
-    def ensure_index_stop2(self, column_name):
-        self.db.stop2.ensure_index(column_name, ASCENDING, unique=True)

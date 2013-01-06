@@ -30,8 +30,6 @@ client_mobile = Client("mobil.iett.gov.tr:80")
 mongo_instance.ensure_index_bus('id')
 mongo_instance.ensure_index_bus('stops_go.id', False)
 mongo_instance.ensure_index_bus('stops_turn.id', False)
-mongo_instance.ensure_index_stop2('id')
-mongo_instance.create_index_stop_location("location")
 
 def parse_href(href):
     # href is like JavaScript:hattahmin('Ş0026','ŞİŞHANE 6')
