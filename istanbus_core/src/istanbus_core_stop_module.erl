@@ -4,7 +4,7 @@
 
 load_by_id(StopId)  ->
     BusList = istanbus_core_bus_module:load_by_stop(StopId),
-    Stop = get_first(emongo:find_one(pool_mongo, "stop", [{"id", StopId}], [{fieldsnoid, ["id", "name"]}])),
+    Stop = get_first(emongo:find_one(pool_mongo, "stop", [{"id", StopId}], [{fieldsnoid, ["id", "name", "location"]}])),
     [{ <<"bus_list">>,  BusList } | Stop].
     
 
@@ -15,7 +15,7 @@ search(Keywords)     ->
 find_closest(Lat, Lon) ->
     Query = [{"location", [{near, [Lat, Lon]}]}],
     Fields =  ["id", "name", location],
-    emongo:find(pool_mongo, "stop2", Query , [{limit, 5}, {fieldsnoid, Fields}]).
+    emongo:find(pool_mongo, "stop", Query , [{limit, 5}, {fieldsnoid, Fields}]).
 
 % internal api
 get_first([H | _]) ->
