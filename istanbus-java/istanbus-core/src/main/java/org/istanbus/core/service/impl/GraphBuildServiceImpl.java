@@ -40,8 +40,8 @@ public class GraphBuildServiceImpl implements GraphBuildService {
     public void buildFullGraph(List<Bus> busList) {
         for (Bus bus : busList) {
             logger.info("Stops(go) for bus: {}", bus.getCode());
-            // linkStops(bus.getCode(), stopsGo, RelationShip.DIRECTION_GO);
-            linkStopsApacheStyle(bus.getCode(), bus.getStopsGo(), RelationShip.DIRECTION_GO);
+            linkStops(bus.getCode(), bus.getStopsGo(), RelationShip.DIRECTION_GO);
+            // linkStopsApacheStyle(bus.getCode(), bus.getStopsGo(), RelationShip.DIRECTION_GO);
         }
     }
 

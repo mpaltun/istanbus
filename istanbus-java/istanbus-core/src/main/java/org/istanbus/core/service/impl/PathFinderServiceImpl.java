@@ -7,7 +7,12 @@ import org.istanbus.core.model.node.Stop;
 import org.istanbus.core.service.PathFinderService;
 import org.neo4j.graphalgo.GraphAlgoFactory;
 import org.neo4j.graphalgo.PathFinder;
-import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Expander;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.kernel.Traversal;
 import org.slf4j.Logger;
@@ -22,15 +27,15 @@ public class PathFinderServiceImpl implements PathFinderService {
 
     private final GraphDatabaseService db;
     private final Index<Node> stopIndex;
-    private final PathFinder<Path> finder;
+    private final PathFinder<? extends Path> finder;
 
     @Inject
     public PathFinderServiceImpl(GraphDB graphDB) {
         db = graphDB.getInstance();
         stopIndex = db.index().forNodes("stops");
 
-        Expander expander = Traversal.expanderForAllTypes(Direction.OUTGOING);
-        finder = GraphAlgoFactory.shortestPath(expander, 10);
+        Expander expander = Traversal.expanderForAllTypes(Direction.BOTH);
+        this.finder = GraphAlgoFactory.shortestPath(expander, 10);
     }
 
     @Override
