@@ -15,6 +15,5 @@ content_types_provided(ReqData, Context) ->
 
 to_json(ReqData, Context) ->
     StopId = wrq:path_info(id, ReqData),
-    DecodedStopId = unicode:characters_to_list(list_to_binary(http_uri:decode(StopId)), utf8),
-    Stop = istanbus_core_stop_module:load_by_id(DecodedStopId),
+    Stop = istanbus_core_stop_module:load_by_id(StopId),
     {mochijson2:encode(Stop),  ReqData, Context}.
