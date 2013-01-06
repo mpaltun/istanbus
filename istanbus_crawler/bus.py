@@ -93,7 +93,7 @@ if (bus_list):
                     if (child.tag == 'description'):
                         vals = child.text.split('aaa')
                         stop['id'] = vals[0]
-                        stop['id2'] = vals[1]
+                        #stop['id2'] = vals[1]
                         #stop['u_desc'] = vals[2]
                     tag = child.tag
                     if (tag == 'long'):
