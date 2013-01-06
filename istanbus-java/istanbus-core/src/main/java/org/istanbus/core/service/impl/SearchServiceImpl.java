@@ -11,8 +11,6 @@ import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
@@ -82,7 +80,6 @@ public class SearchServiceImpl implements SearchService {
         } catch (ParseException e) {
             logger.error("error while parsing query", e);
         }
-        Sort sort = new Sort(new SortField("busCount", SortField.INT, true));
         IndexSearcher searcher = searchers.get(index);
         if (searcher == null)
         {
@@ -91,7 +88,7 @@ public class SearchServiceImpl implements SearchService {
         TopDocs hits = null;
         logger.info("searching {} for keyword {}", index, keyword);
         try {
-            hits = searcher.search(query, 5, sort);
+            hits = searcher.search(query, 5);
         } catch (IOException e) {
             logger.error("error while searching", e);
         }
