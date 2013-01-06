@@ -24,7 +24,7 @@ public class GraphBuildTest {
     @Test
     public void buildGraph() throws Exception {
         graphBuildService.buildFullGraph(jsonPath);
-        Assert.assertTrue(graphBuildService.testGraph("Ş0015"));
+        Assert.assertTrue(graphBuildService.testGraph("taksim-beyoglu"));
     }
 
 }

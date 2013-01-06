@@ -1,17 +1,18 @@
 #!/usr/bin/python
 #-*-coding: utf-8-*-
 
-import urllib
 import codecs
-import lxml.html
-import sys
 import urlparse
 import re
 from time import strftime
+
+import lxml.html
+from slugify import slugify
+
 from db import MongoInstance
 from client import Client
 from char_replacer import CharReplacer
-from slugify import slugify
+
 
 # connect to db
 db_name = "istanbus_" + strftime("%Y-%m-%d") # i.e istanbus_2012-02-09
@@ -24,7 +25,7 @@ bus_time_url = "/hatsaat.php"
 stop_keyword = 'hatsaat.php?'
 
 # prepare headers for .xml files
-headers = {"Host" : "harita.iett.gov.tr", "Referer" : "http://harita.iett.gov.tr/XML/"}
+headers = {"Host": "harita.iett.gov.tr", "Referer": "http://harita.iett.gov.tr/XML/"}
 client = Client("harita.iett.gov.tr:80")
 client_mobile = Client("mobil.iett.gov.tr:80")
 
@@ -38,24 +39,12 @@ def parse_href(href):
     # stop_id = result.group(1)
     stop_name = result.group(2)
     stop_id = slugify(stop_name)
-    return {"id" : stop_id, "name": stop_name.encode('utf-8')}
+    return {"id": stop_id, "name": stop_name.encode('utf-8')}
+
 
 def parse_stop_id_from_href(href):
     # href is like javascript:top.ajaxGet('durak_hat_listesi_v3.php?dadi=ATATU:RK HAVALI:MANI&durak=U0008','durak');haritagoster('durak');
     return re.search("(.*)&durak=(.*)','(.*)", href).group(2)
-
-def parse_stops(hrefs, direction):
-    i = 2
-    stop_list = []
-    for href in hrefs:
-        stop_summary = parse_href(href)
-        if len(stop_summary['id']) == 0:
-            # stop_summary['id'] = parse_stop_id_from_href(bus_html.xpath('//table//td[' + direction +']/table//table/tr[' + str(i) + ']/td[3]/a[5]/@href')[0])
-            stop_summary['name'] = bus_html.xpath('//table//td[' + direction +']/table//table/tr[' + str(i) +']/td[2]/span[1]/text()')[0]
-            stop_summary['id'] = slugify(stop_summary['name'])
-        i+=1
-        stop_list.append(stop_summary)
-    return stop_list
 
 def append_to_stop_list(stop_list, stop):
     not_found = True;
@@ -66,7 +55,8 @@ def append_to_stop_list(stop_list, stop):
     if not_found:
         stop_list.append(stop)
 
-def process_stop_xml(bus_code):
+
+def process_stop_xml(bus_code, stop_ids):
     # replace x_chars
     x_bus_code = replacer.replace_x(bus_code)
 
@@ -92,19 +82,22 @@ def process_stop_xml(bus_code):
             if (tag != 'description'):
                 stop[tag] = child.text
 
-        location_data = [ float(stop['latitude']), float(stop['longitude']) ]
+        location_data = [float(stop['latitude']), float(stop['longitude'])]
         del stop['longitude'];
         del stop['latitude']
+
         stop_name = stop['name']
         del stop['name']
-        stop['id'] = slugify(unicode(stop_name))
+        stop_id = slugify(unicode(stop_name))
+
+        stop['id'] = stop_ids[stop_id]
         stop['location'] = location_data
         stop_list.append(stop)
     if stop_list:
         mongo_instance.insert_bulk_stop2(stop_list)
     else:
         print 'warning: ', bus_code.encode("utf-8"), ' has no stops'
-    
+
 # output/bus.txt must be produced, check it!
 f = codecs.open('output/bus.txt', encoding='utf-8')
 for line in f:
@@ -116,14 +109,12 @@ if bus_list:
             bus_code = values[0].strip()
             bus_name = values[1].strip()
 
-            process_stop_xml(bus_code)
-            
             # encode turkish chars
             encoded_bus_code = replacer.encode(bus_code)
 
             # parse timesheet
             params = "hatcode=" + encoded_bus_code + "&ara=SAAT"
-            response = client_mobile.post(bus_time_url, params, {"Content-Type" : "application/x-www-form-urlencoded"})
+            response = client_mobile.post(bus_time_url, params, {"Content-Type": "application/x-www-form-urlencoded"})
             bus_html = lxml.html.parse(response)
 
             # query (I will take this line out of the for loop some time. Hard job :D)
@@ -145,50 +136,55 @@ if bus_list:
             # parse html in url
 
             params = "hatcode=" + encoded_bus_code + "&ara=DETAY"
-            response = client_mobile.post(bus_stops_url, params, {"Content-Type" : "application/x-www-form-urlencoded"})
+            response = client_mobile.post(bus_stops_url, params, {"Content-Type": "application/x-www-form-urlencoded"})
             bus_html = lxml.html.parse(response)
             # extract stop list
             stop_list = bus_html.xpath("//td/a")[3:]
-            
+
             go_stop_list = []
             turn_stop_list = []
 
             # get all stops
+            stop_ids = {}
             for stop_element in stop_list:
                 # exaple stop_url : hatsaat.php?hatcode=9ÜD&durak_kodu=A2387A&yon=G
                 # we will substring after ? mark and parse the query string
                 stop_url = stop_element.get('href')
                 stop_name = stop_element.text.strip()
-                
-                # district ie Cekmekoy -> stop_element.getchildren()[0].text.encode('utf8')
+
+                district = stop_element.getchildren()[0].text
+                if not district:
+                    district = stop_name
+                district = district.replace(u'I', u'ı').title()
+
                 qs = stop_url[len(stop_keyword):]
                 qs_params = urlparse.parse_qs(qs)
 
                 direction = qs_params['yon'][0]
-                stop_summary = {"id" : slugify(unicode(stop_name)), "name" : stop_name}
+
+                slugified_stop_name = slugify(unicode(stop_name))
+                stop_id = slugified_stop_name + '-' + slugify(unicode(district).replace(u'ı', u'i'))
+                stop_ids[slugified_stop_name] = stop_id
+
+                stop_summary = {"id": stop_id, "name": stop_name, "district": district}
                 if (direction == 'G'):
                     append_to_stop_list(go_stop_list, stop_summary)
                 elif (direction == 'D'):
                     append_to_stop_list(turn_stop_list, stop_summary)
-
-            if not stop_list:
-                params = "sorgu=durak&hat=" + encoded_bus_code
-                response = client.get("/hat_sorgula_v3.php3?" + params,"" , {})
-                bus_html = lxml.html.parse(response, lxml.html.HTMLParser(encoding="utf-8"))
-                hrefs_go = bus_html.xpath('//table//td[1]/table//table/tr/td[3]/a[1]/@href')
-                hrefs_turn = bus_html.xpath('//table//td[2]/table//table/tr/td[3]/a[1]/@href')
-                go_stop_list = parse_stops(hrefs_go, '1')
-                turn_stop_list = parse_stops(hrefs_turn, '2')
 
             # some bus have zero turn stops
             if not turn_stop_list:
                 # if this is one of them, then reverse go list
                 turn_stop_list = go_stop_list[::-1]
 
-            bus = { "id" : bus_code, "name" : bus_name, "stops_go" : go_stop_list, "stops_turn" : turn_stop_list,
-            "time" : {"workday_go" : go_workday_time_list, "saturday_go" : go_saturday_time_list, "sunday_go" : go_sunday_time_list,
-            "workday_turn" : turn_workday_time_list, "saturday_turn" : turn_saturday_time_list, "sunday_turn" : turn_sunday_time_list
-            }, "notes" : notes[2:]}
+            process_stop_xml(bus_code, stop_ids)
+
+            bus = {"id": bus_code, "name": bus_name, "stops_go": go_stop_list, "stops_turn": turn_stop_list,
+                   "time": {"workday_go": go_workday_time_list, "saturday_go": go_saturday_time_list,
+                            "sunday_go": go_sunday_time_list,
+                            "workday_turn": turn_workday_time_list, "saturday_turn": turn_saturday_time_list,
+                            "sunday_turn": turn_sunday_time_list
+                   }, "notes": notes[2:]}
             mongo_instance.insert_bus(bus)
             print bus_code.encode("utf-8"), ' inserted'
 

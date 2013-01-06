@@ -18,8 +18,8 @@ public class PathFindTest {
     private PathFinderService pathFinderService;
 
     // from taksim to kadikoy carsi
-    private String from = "Ş0015";
-    private String to = "A0587";
+    private String from = "taksim-beyoglu";
+    private String to = "kadikoy-kadikoy";
 
     @Inject
     public void setService(PathFinderService pathFinderService) {
