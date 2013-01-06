@@ -2,18 +2,20 @@ package org.istanbus.core.service.impl;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.NumericField;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.Version;
 import org.istanbus.core.model.node.Bus;
 import org.istanbus.core.model.node.Stop;
 import org.istanbus.core.service.SearchIndexService;
 import org.istanbus.core.util.BusJsonParser;
 import org.istanbus.core.util.FileUtils;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
+import org.istanbus.core.util.StopBusCounter;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,6 +86,9 @@ public class SearchIndexServiceImpl implements SearchIndexService {
     public void indexFromBusJson(String jsonPath) {
         List<Bus> busList = busJsonParser.parse(jsonPath);
 
+        StopBusCounter stopBusCounter = new StopBusCounter(busList);
+        stopBusCounter.index();
+
         Set<String> indexedStops = new HashSet<String>();
 
         // NPE is ok
@@ -110,6 +115,7 @@ public class SearchIndexServiceImpl implements SearchIndexService {
                     String stopName = stop.getName();
                     String[] stopTextFields = { stopName };
                     Document stopDoc = getDocument(stopCode, stopName, stopTextFields);
+                    stopDoc.add(new NumericField("busCount").setIntValue(stopBusCounter.getBusCount(stop)));
                     addDocumentToIndexWriter(stopIndexWriter, stopDoc);
                 }
             }
