@@ -9,7 +9,7 @@ public interface GraphBuildService
 {
     void buildFullGraph(List<Bus> busList);
 
-    void buildFullGraph(String jsonPath);
+    void buildFullGraph();
 
     boolean testGraph(String stopCode);
 

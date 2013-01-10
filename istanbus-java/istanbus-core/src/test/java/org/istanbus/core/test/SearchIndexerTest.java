@@ -23,12 +23,7 @@ public class SearchIndexerTest {
 
     @Test
     public void testSearchIndex() {
-        try {
-            searchIndexService.indexFromBusJson("/Users/mustafa/bus.json");
-            Assert.assertTrue(true);
-        } catch (IOException e) {
-            Assert.fail(e.getMessage());
-        }
-
+        searchIndexService.indexAll();
+        Assert.assertTrue(true);
     }
 }

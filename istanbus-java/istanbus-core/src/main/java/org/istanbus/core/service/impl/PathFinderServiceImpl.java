@@ -19,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 public class PathFinderServiceImpl implements PathFinderService {
@@ -34,7 +36,7 @@ public class PathFinderServiceImpl implements PathFinderService {
         db = graphDB.getInstance();
         stopIndex = db.index().forNodes("stops");
 
-        Expander expander = Traversal.expanderForAllTypes(Direction.BOTH);
+        Expander expander = Traversal.expanderForAllTypes(Direction.OUTGOING);
         this.finder = GraphAlgoFactory.shortestPath(expander, 10);
     }
 
@@ -43,8 +45,8 @@ public class PathFinderServiceImpl implements PathFinderService {
 
         logger.info("finding path from {} to {}", fromStop, toStop);
 
-        Node nodeA = stopIndex.get("code", fromStop).iterator().next();
-        Node nodeB = stopIndex.get("code", toStop).iterator().next();
+        Node nodeA = stopIndex.get("id", fromStop).iterator().next();
+        Node nodeB = stopIndex.get("id", toStop).iterator().next();
 
         Path path = finder.findSinglePath(nodeA, nodeB);
         return getTransports(path);
@@ -54,7 +56,7 @@ public class PathFinderServiceImpl implements PathFinderService {
     private Stop getStopFromNode(Node node)
     {
         Stop stop = new Stop();
-        stop.setId((String) node.getProperty("code"));
+        stop.setId((String) node.getProperty("id"));
         stop.setName((String) node.getProperty("label"));
 
         return stop;
@@ -69,26 +71,27 @@ public class PathFinderServiceImpl implements PathFinderService {
             return transports;
         }
         Transport previousTransport = null;
-        Iterable<Relationship> relationships = path.relationships();
-        for (Relationship relationship : relationships) {
+        for (Relationship relationship : path.relationships()) {
             Node startNode = relationship.getStartNode();
             Node endNode = relationship.getEndNode();
+            List<String> busList = Arrays.asList((String[]) relationship.getProperty("busList"));
 
-            String bus = (String) relationship.getProperty("bus");
-
-            // if this is same bus, then just increment stop count of previous one
-            // and set last stop
-            if (previousTransport != null && previousTransport.getBus().equals(bus))
-            {
-                previousTransport.setStopCount(previousTransport.getStopCount() + 1);
-                // last stop
-                Stop to = getStopFromNode(endNode);
-                previousTransport.setTo(to);
-                continue;
+            // set common bus list for following transports
+            if (previousTransport != null) {
+                List<String> commonBusList = getCommonBusList(previousTransport, busList);
+                if (!commonBusList.isEmpty()) {
+                    previousTransport.setStopCount(previousTransport.getStopCount() + 1);
+                    previousTransport.setBusList(commonBusList);
+                    // last stop
+                    Stop to = getStopFromNode(endNode);
+                    previousTransport.setTo(to);
+                    continue;
+                }
             }
 
             Transport transport = new Transport();
-            transport.setBus(bus);
+            transport.setBusList(busList);
+
 
             int stopCount = (Integer) relationship.getProperty("stopCount");
             transport.setStopCount(stopCount);
@@ -104,5 +107,17 @@ public class PathFinderServiceImpl implements PathFinderService {
         }
 
         return transports;
+    }
+
+    private List<String> getCommonBusList(Transport transport, List<String> busList) {
+        HashSet<String> set = new HashSet<String>(transport.getBusList());
+
+        List<String> commonBusList = new ArrayList<String>();
+        for (String bus : busList) {
+            if (set.contains(bus)) {
+                commonBusList.add(bus);
+            }
+        }
+        return commonBusList;
     }
 }

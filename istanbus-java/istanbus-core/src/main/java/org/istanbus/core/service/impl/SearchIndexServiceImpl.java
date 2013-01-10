@@ -9,10 +9,10 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.istanbus.core.dao.BusDAO;
 import org.istanbus.core.model.node.Bus;
 import org.istanbus.core.model.node.Stop;
 import org.istanbus.core.service.SearchIndexService;
-import org.istanbus.core.util.BusJsonParser;
 import org.istanbus.core.util.FileUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.slf4j.Logger;
@@ -30,13 +30,13 @@ public class SearchIndexServiceImpl implements SearchIndexService {
     private static final Logger logger = LoggerFactory.getLogger(SearchIndexServiceImpl.class);
 
     private String indexRoot;
+    private BusDAO busDAO;
     private GraphDatabaseService db;
-    private BusJsonParser busJsonParser;
 
     @Inject
-    public SearchIndexServiceImpl(@Named("search.index.root.path") String indexRoot, BusJsonParser busJsonParser) {
+    public SearchIndexServiceImpl(@Named("search.index.root.path") String indexRoot, BusDAO busDAO) {
         this.indexRoot = indexRoot;
-        this.busJsonParser = busJsonParser;
+        this.busDAO = busDAO;
     }
 
     public IndexWriter openWriter(String index) {
@@ -81,8 +81,8 @@ public class SearchIndexServiceImpl implements SearchIndexService {
     }
 
     @Override
-    public void indexFromBusJson(String jsonPath) {
-        List<Bus> busList = busJsonParser.parse(jsonPath);
+    public void indexAll() {
+        List<Bus> busList = busDAO.loadAllBuses();
 
         Set<String> indexedStops = new HashSet<String>();
 
@@ -91,7 +91,7 @@ public class SearchIndexServiceImpl implements SearchIndexService {
         IndexWriter busIndexWriter = openWriter("bus");
         for (Bus bus : busList) {
 
-            String busCode = bus.getCode();
+            String busCode = bus.getId();
             String busName = bus.getName();
 
             String[] busTextFields = { busCode, busName };

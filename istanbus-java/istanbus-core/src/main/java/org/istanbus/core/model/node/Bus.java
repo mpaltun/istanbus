@@ -4,19 +4,19 @@ import java.util.List;
 
 public class Bus
 {
-    private String code;
+    private String id;
     private String name;
     private List<Stop> stopsGo;
     private List<Stop> stopsTurn;
 
-    public String getCode()
+    public String getId()
     {
-        return code;
+        return id;
     }
 
-    public void setCode(String code)
+    public void setId(String id)
     {
-        this.code = code;
+        this.id = id;
     }
 
     public String getName()
@@ -54,7 +54,7 @@ public class Bus
     {
         StringBuilder builder = new StringBuilder();
         builder
-            .append("Bus [code : ").append(code).append(", name : ").append(name).append(", stopsGo : ").append(stopsGo).append(", stopsTurn : ")
+            .append("Bus [id : ").append(id).append(", name : ").append(name).append(", stopsGo : ").append(stopsGo).append(", stopsTurn : ")
             .append(stopsTurn).append("]");
         return builder.toString();
     }

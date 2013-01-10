@@ -4,6 +4,6 @@ import java.io.IOException;
 
 public interface SearchIndexService {
 
-    void indexFromBusJson(String jsonPath) throws IOException;
+    void indexAll();
 
 }

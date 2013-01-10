@@ -2,10 +2,12 @@ package org.istanbus.core.model;
 
 import org.istanbus.core.model.node.Stop;
 
+import java.util.List;
+
 public class Transport {
     private Stop from;
     private Stop to;
-    private String bus;
+    private List<String> busList;
     private int stopCount;
 
     public Stop getFrom() {
@@ -24,14 +26,6 @@ public class Transport {
         this.to = to;
     }
 
-    public String getBus() {
-        return bus;
-    }
-
-    public void setBus(String bus) {
-        this.bus = bus;
-    }
-
     public int getStopCount() {
         return stopCount;
     }
@@ -40,13 +34,23 @@ public class Transport {
         this.stopCount = stopCount;
     }
 
+    public List<String> getBusList() {
+        return busList;
+    }
+
+    public void setBusList(List<String> busList) {
+        this.busList = busList;
+    }
+
     @Override
     public String toString() {
-        return "Transport{" +
-                "from=" + from +
-                ", to=" + to +
-                ", bus='" + bus + '\'' +
-                ", stopCount=" + stopCount +
-                '}';
+        final StringBuilder sb = new StringBuilder();
+        sb.append("Transport");
+        sb.append("{from=").append(from);
+        sb.append(", to=").append(to);
+        sb.append(", busList=").append(busList);
+        sb.append(", stopCount=").append(stopCount);
+        sb.append('}');
+        return sb.toString();
     }
 }

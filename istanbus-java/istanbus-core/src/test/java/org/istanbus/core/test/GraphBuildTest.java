@@ -14,8 +14,6 @@ public class GraphBuildTest {
 
     private GraphBuildService graphBuildService;
 
-    private String jsonPath = "/Users/mustafa/bus.json";
-
     @Inject
     public void setService(GraphBuildService graphBuildService) {
         this.graphBuildService = graphBuildService;
@@ -23,7 +21,7 @@ public class GraphBuildTest {
 
     @Test
     public void buildGraph() throws Exception {
-        graphBuildService.buildFullGraph(jsonPath);
+        graphBuildService.buildFullGraph();
         Assert.assertTrue(graphBuildService.testGraph("taksim-beyoglu"));
     }
 

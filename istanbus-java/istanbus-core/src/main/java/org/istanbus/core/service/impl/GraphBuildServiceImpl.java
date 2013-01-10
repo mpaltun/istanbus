@@ -1,12 +1,12 @@
 package org.istanbus.core.service.impl;
 
 import com.google.inject.Inject;
+import org.istanbus.core.dao.BusDAO;
 import org.istanbus.core.db.GraphDB;
 import org.istanbus.core.model.graph.RelationShip;
 import org.istanbus.core.model.node.Bus;
 import org.istanbus.core.model.node.Stop;
 import org.istanbus.core.service.GraphBuildService;
-import org.istanbus.core.util.BusJsonParser;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -25,13 +25,14 @@ public class GraphBuildServiceImpl implements GraphBuildService {
     private GraphDatabaseService db;
     private final Index<Node> stopIndex;
 
-    private final String code = "code";
+    private final String id = "id";
     private final String label = "label";
-    private BusJsonParser jsonParser;
+
+    private BusDAO busDAO;
 
     @Inject
-    public GraphBuildServiceImpl(GraphDB graphDB, BusJsonParser jsonParser) {
-        this.jsonParser = jsonParser;
+    public GraphBuildServiceImpl(GraphDB graphDB, BusDAO busDAO) {
+        this.busDAO = busDAO;
         db = graphDB.getInstance();
         stopIndex = db.index().forNodes("stops");
     }
@@ -39,48 +40,100 @@ public class GraphBuildServiceImpl implements GraphBuildService {
     @Override
     public void buildFullGraph(List<Bus> busList) {
         for (Bus bus : busList) {
-            logger.info("Stops(go) for bus: {}", bus.getCode());
-            linkStops(bus.getCode(), bus.getStopsGo(), RelationShip.DIRECTION_GO);
-            // linkStopsApacheStyle(bus.getCode(), bus.getStopsGo(), RelationShip.DIRECTION_GO);
+            logger.info("Stops(go) for bus: {}", bus.getId());
+            linkStops(bus.getId(), bus.getStopsGo(), RelationShip.DIRECTION_GO);
+            logger.info("Stops(turn) for bus: {}", bus.getId());
+            linkStops(bus.getId(), bus.getStopsTurn(), RelationShip.DIRECTION_GO);
+            // linkStopsApacheStyle(bus.getId(), bus.getStopsGo(), RelationShip.DIRECTION_GO);
         }
     }
 
     @Override
-    public void buildFullGraph(String jsonPath) {
-        List<Bus> busList = jsonParser.parse(jsonPath);
+    public void buildFullGraph() {
+        List<Bus> busList = busDAO.loadAllBuses();
         buildFullGraph(busList);
     }
 
     @Override
-    public boolean testGraph(String stopCode) {
-        IndexHits<Node> hits = stopIndex.get(code, stopCode);
+    public boolean testGraph(String stopId) {
+        IndexHits<Node> hits = stopIndex.get(id, stopId);
         return hits.size() > 0;
     }
 
-    private void linkStops(String busCode, List<Stop> stops, RelationShip relationShip) {
+    private void linkStops(String busId, List<Stop> stops, RelationShip relationShip) {
         Transaction tx = db.beginTx();
-        Node previousNode = null;
+        Node previous = null;
         for (Stop stop : stops) {
-            if (previousNode == null) {
+            Node current = createNodeFromStop(stop);
+            if (previous == null) {
                 // here comes only once
-                previousNode = createNodeFromStop(stop);
+                previous = current;
             }
             else {
-                Node node = createNodeFromStop(stop);
-                logger.info("Linking stop {} to stop {}", previousNode.getProperty(label), node.getProperty(label));
+                logger.info("Linking stop {} to stop {}", previous.getProperty(label), current.getProperty(label));
 
-                Relationship relationship = previousNode.createRelationshipTo(node, relationShip);
-                relationship.setProperty("bus", busCode);
-                relationship.setProperty("stopCount", 1);
+                checkAndCreateRelationship(previous, current, busId);
 
                 tx.success();
-                previousNode = node;
+                previous = current;
             }
         }
         tx.finish();
     }
 
-    private void linkStopsApacheStyle(String busCode, List<Stop> stops, RelationShip relationShip) {
+    private Relationship getOldRelationShip(Node previous, Node current) {
+
+        String previousId = (String) previous.getProperty(id);
+        String currentId = (String) current.getProperty(id);
+
+        Relationship oldRelationship = null;
+        for (Relationship r : previous.getRelationships()) {
+            String startId = (String) r.getStartNode().getProperty(id);
+            String endId = (String) r.getEndNode().getProperty(id);
+            if ((startId.equals(previousId) && endId.equals(currentId))
+                    || endId.equals(previousId) && startId.equals(currentId)) {
+                oldRelationship = r;
+                break;
+            }
+        }
+        return oldRelationship;
+    }
+
+    /**
+     * Checks a relationship exists between nodes and creates if there is none
+     * @param previous
+     * @param current
+     * @param busId
+     */
+    private void checkAndCreateRelationship(Node previous, Node current, String busId) {
+        String[] busList = null;
+        Relationship relationship = getOldRelationShip(previous, current);
+        if (relationship == null) {
+            relationship = previous.createRelationshipTo(current, RelationShip.DIRECTION_GO);
+            busList = new String[] { busId };
+        } else {
+
+            busList = (String[]) relationship.getProperty("busList");
+
+            boolean notFound = true;
+            for (String bus : busList) {
+                if (bus.equals(busId)) {
+                    notFound = false;
+                    break;
+                }
+            }
+            if (notFound) {
+                String[] tmpList = new String[busList.length + 1];
+                System.arraycopy(busList, 0, tmpList, 0, busList.length);
+                tmpList[busList.length] = busId;
+                busList = tmpList;
+            }
+        }
+        relationship.setProperty("busList", busList);
+        relationship.setProperty("stopCount", 1);
+    }
+
+    private void linkStopsApacheStyle(String busId, List<Stop> stops, RelationShip relationShip) {
         Transaction tx = db.beginTx();
         Node[] nodes = {null, null, null};
         for (int i = 0; i < stops.size(); i++) {
@@ -95,7 +148,7 @@ public class GraphBuildServiceImpl implements GraphBuildService {
 
                     logger.info("Linking stop {} to stop {}", nodes[1].getProperty(label), nodes[2].getProperty(label));
                     Relationship relationship = nodes[1].createRelationshipTo(nodes[2], relationShip);
-                    relationship.setProperty("bus", busCode);
+                    relationship.setProperty("bus", busId);
                     relationship.setProperty("stopCount", j - i);
 
                     tx.success();
@@ -108,14 +161,10 @@ public class GraphBuildServiceImpl implements GraphBuildService {
         tx.finish();
     }
 
-    private double calculateCost(Node[] nodes) {
-         return 0d;
-    }
-
     private Node createNodeFromStop(Stop stop) {
 
         // check existance
-        IndexHits<Node> nodes = stopIndex.get(code, stop.getId());
+        IndexHits<Node> nodes = stopIndex.get(id, stop.getId());
 
         Node node = null;
         if (nodes.size() > 0)
@@ -130,10 +179,10 @@ public class GraphBuildServiceImpl implements GraphBuildService {
             // stop not found on index, so creating new one
             node = db.createNode();
             node.setProperty(label, stop.getName());
-            node.setProperty(code, stop.getId());
+            node.setProperty(id, stop.getId());
 
             // add to index
-            stopIndex.add(node, code, stop.getId());
+            stopIndex.add(node, id, stop.getId());
         }
 
         return node;
