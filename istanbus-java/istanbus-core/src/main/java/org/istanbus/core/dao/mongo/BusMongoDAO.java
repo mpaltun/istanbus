@@ -61,6 +61,7 @@ public class BusMongoDAO implements BusDAO {
             result.add(bus);
         }
 
+        cursor.close();
         return result;
 
     }
