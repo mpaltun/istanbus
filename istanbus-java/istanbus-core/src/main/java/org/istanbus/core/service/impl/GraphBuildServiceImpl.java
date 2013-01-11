@@ -38,7 +38,8 @@ public class GraphBuildServiceImpl implements GraphBuildService {
     }
 
     @Override
-    public void buildFullGraph(List<Bus> busList) {
+    public void buildFullGraph() {
+        List<Bus> busList = busDAO.loadAllBuses();
         for (Bus bus : busList) {
             logger.info("Stops(go) for bus: {}", bus.getId());
             linkStops(bus.getId(), bus.getStopsGo(), RelationShip.DIRECTION_GO);
@@ -46,12 +47,6 @@ public class GraphBuildServiceImpl implements GraphBuildService {
             linkStops(bus.getId(), bus.getStopsTurn(), RelationShip.DIRECTION_GO);
             // linkStopsApacheStyle(bus.getId(), bus.getStopsGo(), RelationShip.DIRECTION_GO);
         }
-    }
-
-    @Override
-    public void buildFullGraph() {
-        List<Bus> busList = busDAO.loadAllBuses();
-        buildFullGraph(busList);
     }
 
     @Override
@@ -90,8 +85,7 @@ public class GraphBuildServiceImpl implements GraphBuildService {
         for (Relationship r : previous.getRelationships()) {
             String startId = (String) r.getStartNode().getProperty(id);
             String endId = (String) r.getEndNode().getProperty(id);
-            if ((startId.equals(previousId) && endId.equals(currentId))
-                    || endId.equals(previousId) && startId.equals(currentId)) {
+            if (startId.equals(previousId) && endId.equals(currentId)) {
                 oldRelationship = r;
                 break;
             }
