@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 public class SearchIndexServiceImpl implements SearchIndexService {
@@ -32,6 +33,8 @@ public class SearchIndexServiceImpl implements SearchIndexService {
     private String indexRoot;
     private BusDAO busDAO;
     private GraphDatabaseService db;
+
+    private final Locale DEFAULT_LOCALE = new Locale("tr");
 
     @Inject
     public SearchIndexServiceImpl(@Named("search.index.root.path") String indexRoot, BusDAO busDAO) {
@@ -147,11 +150,10 @@ public class SearchIndexServiceImpl implements SearchIndexService {
         StringBuilder sb = new StringBuilder();
 
         for (String s : strings) {
-            String string = s.toLowerCase();
-
-            String asciiString = toASCIIString(string);
+            String string = s.toLowerCase(DEFAULT_LOCALE);
             sb.append(string);
 
+            String asciiString = toASCIIString(string);
             if (!string.equals(asciiString)) {
                 sb.append(" ").append(asciiString);
             }
