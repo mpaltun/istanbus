@@ -1,6 +1,7 @@
 package org.istanbus.core.model;
 
 public class SearchResult {
+
     private String id;
     private String name;
 
@@ -27,9 +28,11 @@ public class SearchResult {
 
     @Override
     public String toString() {
-        return "SearchResult{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                '}';
+        final StringBuilder sb = new StringBuilder();
+        sb.append("SearchResult");
+        sb.append("{id='").append(id).append('\'');
+        sb.append(", name='").append(name).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

@@ -109,7 +109,10 @@ public class SearchIndexServiceImpl implements SearchIndexService {
                 if (indexedStops.add(stopCode)) {
                     String stopName = stop.getName();
                     String[] stopTextFields = { stopName };
+
                     Document stopDoc = getDocument(stopCode, stopName, stopTextFields);
+                    stopDoc.add(new Field("district", stop.getDistrict(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+
                     addDocumentToIndexWriter(stopIndexWriter, stopDoc);
                 }
             }

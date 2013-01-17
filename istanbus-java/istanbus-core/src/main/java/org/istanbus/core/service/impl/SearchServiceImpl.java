@@ -14,7 +14,9 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.istanbus.core.model.SearchIndex;
 import org.istanbus.core.model.SearchResult;
+import org.istanbus.core.model.StopSearchResult;
 import org.istanbus.core.service.SearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +32,7 @@ import java.util.Map;
 public class SearchServiceImpl implements SearchService {
 
     private static final Logger logger = LoggerFactory.getLogger(SearchServiceImpl.class);
-    private Map<String, IndexSearcher> searchers;
+    private Map<SearchIndex, IndexSearcher> searchers;
     private SearchIndexServiceImpl searchIndexService;
     private String indexRoot;
 
@@ -41,9 +43,9 @@ public class SearchServiceImpl implements SearchService {
         IndexSearcher stopSearcher = initSearcher("stop");
         IndexSearcher busSearcher = initSearcher("bus");
 
-        searchers = new HashMap<String, IndexSearcher>();
-        searchers.put("stop", stopSearcher);
-        searchers.put("bus", busSearcher);
+        searchers = new HashMap<SearchIndex, IndexSearcher>();
+        searchers.put(SearchIndex.stop, stopSearcher);
+        searchers.put(SearchIndex.bus, busSearcher);
     }
 
     private IndexSearcher initSearcher(String index) {
@@ -80,11 +82,17 @@ public class SearchServiceImpl implements SearchService {
         } catch (ParseException e) {
             logger.error("error while parsing query", e);
         }
-        IndexSearcher searcher = searchers.get(index);
-        if (searcher == null)
-        {
+
+        SearchIndex searchIndex;
+        try {
+            searchIndex = SearchIndex.valueOf(index);
+        }
+        catch (IllegalArgumentException exception) {
+            logger.warn("index {} not found", index);
             return Collections.emptyList();
         }
+
+        IndexSearcher searcher = searchers.get(searchIndex);
         TopDocs hits = null;
         logger.info("searching {} for keyword {}", index, keyword);
         try {
@@ -94,21 +102,21 @@ public class SearchServiceImpl implements SearchService {
         }
 
         ScoreDoc[] scoreDocs = hits.scoreDocs;
-        List<SearchResult> results = getResultsFromDocs(searcher, scoreDocs);
+        List<SearchResult> results = getResultsFromDocs(searchIndex, searcher, scoreDocs);
 
         return results;
     }
 
-    private List<SearchResult> getResultsFromDocs(IndexSearcher searcher, ScoreDoc[] docs) {
+    private List<SearchResult> getResultsFromDocs(SearchIndex index, IndexSearcher searcher, ScoreDoc[] docs) {
         List<SearchResult> results = new ArrayList<SearchResult>();
         for (ScoreDoc doc : docs) {
-            SearchResult result = getResultFromDoc(searcher, doc);
+            SearchResult result = getResultFromDoc(index, searcher, doc);
             results.add(result);
         }
         return results;
     }
 
-    private SearchResult getResultFromDoc(IndexSearcher searcher, ScoreDoc scoreDoc) {
+    private SearchResult getResultFromDoc(SearchIndex index, IndexSearcher searcher, ScoreDoc scoreDoc) {
         Document doc = null;
         try {
             doc = searcher.doc(scoreDoc.doc);
@@ -116,14 +124,18 @@ public class SearchServiceImpl implements SearchService {
             logger.error("error while getting doc from stopSearcher", e);
         }
 
-        SearchResult result = null;
         if (doc != null) {
             String id = doc.get("id");
             String name = doc.get("name");
 
-            result = new SearchResult(id, name);
+            // add district to result for stop search results
+            if (index == SearchIndex.stop) {
+                return new StopSearchResult(id, name, doc.get("district"));
+            }
+
+            return new SearchResult(id, name);
         }
 
-        return result;
+        return null;
     }
 }
