@@ -120,12 +120,12 @@ if bus_list:
             # query (I will take this line out of the for loop some time. Hard job :D)
             time_xpath_query = '//table[@class="text"]//td[{0}]//font//text()'
             # time lists
-            go_workday_time_list = bus_html.xpath(time_xpath_query.format('1'))
-            go_saturday_time_list = bus_html.xpath(time_xpath_query.format('2'))
-            go_sunday_time_list = bus_html.xpath(time_xpath_query.format('3'))
-            turn_workday_time_list = bus_html.xpath(time_xpath_query.format('4'))
-            turn_saturday_time_list = bus_html.xpath(time_xpath_query.format('5'))
-            turn_sunday_time_list = bus_html.xpath(time_xpath_query.format('6'))
+            go_weekdays_timesheet = bus_html.xpath(time_xpath_query.format('1'))
+            go_saturday_timesheet = bus_html.xpath(time_xpath_query.format('2'))
+            go_sunday_timesheet = bus_html.xpath(time_xpath_query.format('3'))
+            turn_weekdays_timesheet = bus_html.xpath(time_xpath_query.format('4'))
+            turn_saturday_timesheet = bus_html.xpath(time_xpath_query.format('5'))
+            turn_sunday_timesheet = bus_html.xpath(time_xpath_query.format('6'))
 
             # here i am doing interesting things
             # normalize notes like […, 'hel', 'lo', 'wor', 'ld']
@@ -147,7 +147,7 @@ if bus_list:
             # get all stops
             stop_ids = {}
             for stop_element in stop_list:
-                # exaple stop_url : hatsaat.php?hatcode=9ÜD&durak_kodu=A2387A&yon=G
+                # example stop_url : hatsaat.php?hatcode=9ÜD&durak_kodu=A2387A&yon=G
                 # we will substring after ? mark and parse the query string
                 stop_url = stop_element.get('href')
                 stop_name = stop_element.text.strip()
@@ -179,12 +179,22 @@ if bus_list:
 
             process_stop_xml(bus_code, stop_ids)
 
-            bus = {"id": bus_code, "name": bus_name, "stops_go": go_stop_list, "stops_turn": turn_stop_list,
-                   "time": {"workday_go": go_workday_time_list, "saturday_go": go_saturday_time_list,
-                            "sunday_go": go_sunday_time_list,
-                            "workday_turn": turn_workday_time_list, "saturday_turn": turn_saturday_time_list,
-                            "sunday_turn": turn_sunday_time_list
-                   }, "notes": notes[2:]}
+            weekdays_timesheet = { "go" : go_weekdays_timesheet, "turn" : turn_weekdays_timesheet};
+            sunday_timesheet = { "go" : go_sunday_timesheet, "turn" : turn_sunday_timesheet};
+            saturday_timesheet = { "go" : go_saturday_timesheet, "turn" : turn_saturday_timesheet};
+
+            stops = { "go" : go_stop_list, "turn" : turn_stop_list}
+            bus = {
+                    "id" : bus_code,
+                   "name": bus_name,
+                   "stops": stops,
+                   "timesheet": {
+                       "weekdays": weekdays_timesheet,
+                       "saturday" : saturday_timesheet,
+                       "sunday" : sunday_timesheet
+                    },
+                   "notes": notes[2:]
+            }
             mongo_instance.insert_bus(bus)
             print bus_code.encode("utf-8"), ' inserted'
 
