@@ -8,24 +8,24 @@ load_all() ->
     BusList.
 
 load_by_id(BusId) ->
-    Result = emongo:find_one(pool_mongo, "bus", [{"id", BusId}], [{fieldsnoid, ["id", "name", "stops_go", "time", "stops_turn", "notes"]}]),
+    Result = emongo:find_one(pool_mongo, "bus", [{"id", BusId}], [{fieldsnoid, ["id", "name", "stops", "timesheet", "notes"]}]),
     get_first(Result).
 
 load_stops(BusId, Direction) when Direction =:= "go" orelse Direction =:= "turn" ->
     %% Direction go | turn
-    Field = "stops_" ++ Direction,
+    Field = "stops." ++ Direction,
     Result = load_bus_with_fields(BusId, [Field]),
-    get_first(Result, list_to_binary(Field));
+    get_first(Result, <<"stops">>);
 
 load_stops(_BusId, _Direction) ->
     [].
 
 load_timesheet(BusId) ->
-    Result = load_bus_with_fields(BusId, ["time"]),
-    get_first(Result, <<"time">>).
+    Result = load_bus_with_fields(BusId, ["timesheet"]),
+    get_first(Result, <<"timesheet">>).
 
 load_by_stop(StopId) ->
-    Query = {"$or", [[{"stops_go.id", StopId}], [{"stops_turn.id", StopId}]]},
+    Query = {"$or", [[{"stops.go.id", StopId}], [{"stops.turn.id", StopId}]]},
     emongo:find(pool_mongo, "bus", [Query], [{fieldsnoid, ["id", "name"]}]).
 
 % internal api
@@ -35,9 +35,12 @@ get_first([H | _]) ->
 get_first([]) ->
     {struct, []}.
 
-
 get_first([H | _], Field) ->
-    proplists:get_value(Field, H);
+    Value = proplists:get_value(Field, H),
+    case Value of
+        undefined -> [];
+        _ -> Value
+    end;
 get_first([], _Field) ->
     [].
 
