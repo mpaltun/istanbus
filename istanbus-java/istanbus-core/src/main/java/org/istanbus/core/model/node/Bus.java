@@ -6,8 +6,7 @@ public class Bus
 {
     private String id;
     private String name;
-    private List<Stop> stopsGo;
-    private List<Stop> stopsTurn;
+    private Stops stops;
 
     public String getId()
     {
@@ -29,34 +28,54 @@ public class Bus
         this.name = name;
     }
 
-    public List<Stop> getStopsGo()
-    {
-        return stopsGo;
+    public Stops getStops() {
+        return stops;
     }
 
-    public void setStopsGo(List<Stop> stopsGo)
-    {
-        this.stopsGo = stopsGo;
+    public void setStops(Stops stops) {
+        this.stops = stops;
     }
 
-    public List<Stop> getStopsTurn()
+    public class Stops
     {
-        return stopsTurn;
-    }
+        private List<Stop> go;
+        private List<Stop> turn;
 
-    public void setStopsTurn(List<Stop> stopsTurn)
-    {
-        this.stopsTurn = stopsTurn;
+        public List<Stop> getGo() {
+            return go;
+        }
+
+        public void setGo(List<Stop> go) {
+            this.go = go;
+        }
+
+        public List<Stop> getTurn() {
+            return turn;
+        }
+
+        public void setTurn(List<Stop> turn) {
+            this.turn = turn;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("Stops");
+            sb.append("{go=").append(go);
+            sb.append(", turn=").append(turn);
+            sb.append('}');
+            return sb.toString();
+        }
     }
 
     @Override
-    public String toString()
-    {
-        StringBuilder builder = new StringBuilder();
-        builder
-            .append("Bus [id : ").append(id).append(", name : ").append(name).append(", stopsGo : ").append(stopsGo).append(", stopsTurn : ")
-            .append(stopsTurn).append("]");
-        return builder.toString();
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("Bus");
+        sb.append("{id='").append(id).append('\'');
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", stops=").append(stops);
+        sb.append('}');
+        return sb.toString();
     }
-
 }

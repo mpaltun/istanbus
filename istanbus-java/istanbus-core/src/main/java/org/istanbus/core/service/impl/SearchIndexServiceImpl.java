@@ -103,8 +103,8 @@ public class SearchIndexServiceImpl implements SearchIndexService {
             addDocumentToIndexWriter(busIndexWriter, busDoc);
 
             List<Stop> stops = new ArrayList<Stop>();
-            stops.addAll(bus.getStopsGo());
-            stops.addAll(bus.getStopsTurn());
+            stops.addAll(bus.getStops().getGo());
+            stops.addAll(bus.getStops().getTurn());
 
             for (Stop stop : stops) {
                 // ensure not indexed already

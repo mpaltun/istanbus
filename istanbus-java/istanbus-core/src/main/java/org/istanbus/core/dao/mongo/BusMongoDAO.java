@@ -50,8 +50,8 @@ public class BusMongoDAO implements BusDAO {
         fields.put("_id", 0);
         fields.put("id", 1);
         fields.put("name", 1);
-        fields.put("stops_go", 1);
-        fields.put("stops_turn", 1);
+        fields.put("stops.go", 1);
+        fields.put("stops.turn", 1);
 
         DBCursor cursor = collection.find(query, fields);
         Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();

@@ -42,9 +42,9 @@ public class GraphBuildServiceImpl implements GraphBuildService {
         List<Bus> busList = busDAO.loadAllBuses();
         for (Bus bus : busList) {
             logger.info("Stops(go) for bus: {}", bus.getId());
-            linkStops(bus.getId(), bus.getStopsGo(), RelationShip.DIRECTION_GO);
+            linkStops(bus.getId(), bus.getStops().getGo(), RelationShip.DIRECTION_GO);
             logger.info("Stops(turn) for bus: {}", bus.getId());
-            linkStops(bus.getId(), bus.getStopsTurn(), RelationShip.DIRECTION_GO);
+            linkStops(bus.getId(), bus.getStops().getTurn(), RelationShip.DIRECTION_GO);
             // linkStopsApacheStyle(bus.getId(), bus.getStopsGo(), RelationShip.DIRECTION_GO);
         }
     }
