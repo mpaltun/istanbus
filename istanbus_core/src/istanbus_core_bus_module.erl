@@ -1,6 +1,6 @@
 -module(istanbus_core_bus_module).
 
--export([load_all/0, load_by_id/1, load_stops/2, load_timesheet/1, load_by_stop/1]).
+-export([load_all/0, load_by_id/1, load_stops/2, load_timesheet/1]).
 
 load_all() ->
     Result = load_by_id("all"),
@@ -23,10 +23,6 @@ load_stops(_BusId, _Direction) ->
 load_timesheet(BusId) ->
     Result = load_bus_with_fields(BusId, ["timesheet"]),
     get_first(Result, <<"timesheet">>).
-
-load_by_stop(StopId) ->
-    Query = {"$or", [[{"stops.go.id", StopId}], [{"stops.turn.id", StopId}]]},
-    emongo:find(pool_mongo, "bus", [Query], [{fieldsnoid, ["id", "name"]}]).
 
 % internal api
 
