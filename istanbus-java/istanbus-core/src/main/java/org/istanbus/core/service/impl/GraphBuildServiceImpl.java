@@ -93,19 +93,24 @@ public class GraphBuildServiceImpl implements GraphBuildService {
         return oldRelationship;
     }
 
+    private void checkAndCreateRelationship(Node previous, Node current, String busId) {
+        checkAndCreateRelationship(previous, current, busId, 1);
+    }
+
     /**
      * Checks a relationship exists between nodes and creates if there is none
      * @param previous
      * @param current
      * @param busId
      */
-    private void checkAndCreateRelationship(Node previous, Node current, String busId) {
+    private void checkAndCreateRelationship(Node previous, Node current, String busId, int stopCount) {
         String[] busList = null;
         Relationship relationship = getOldRelationShip(previous, current);
         if (relationship == null) {
             relationship = previous.createRelationshipTo(current, RelationShip.DIRECTION_GO);
             busList = new String[] { busId };
-        } else {
+        }
+        else {
 
             busList = (String[]) relationship.getProperty("busList");
 
@@ -124,12 +129,12 @@ public class GraphBuildServiceImpl implements GraphBuildService {
             }
         }
         relationship.setProperty("busList", busList);
-        relationship.setProperty("stopCount", 1);
+        relationship.setProperty("stopCount", stopCount);
     }
 
     private void linkStopsApacheStyle(String busId, List<Stop> stops, RelationShip relationShip) {
         Transaction tx = db.beginTx();
-        Node[] nodes = {null, null, null};
+        Node[] nodes = { null, null, null };
         for (int i = 0; i < stops.size(); i++) {
             Stop stop =  stops.get(i);
             for (int j = i; j < stops.size(); j++) {
@@ -141,9 +146,9 @@ public class GraphBuildServiceImpl implements GraphBuildService {
                     nodes[2] = createNodeFromStop(s);
 
                     logger.info("Linking stop {} to stop {}", nodes[1].getProperty(label), nodes[2].getProperty(label));
-                    Relationship relationship = nodes[1].createRelationshipTo(nodes[2], relationShip);
-                    relationship.setProperty("bus", busId);
-                    relationship.setProperty("stopCount", j - i);
+
+                    int stopCount = j - i;
+                    checkAndCreateRelationship(nodes[1], nodes[2], busId, stopCount);
 
                     tx.success();
                 }
