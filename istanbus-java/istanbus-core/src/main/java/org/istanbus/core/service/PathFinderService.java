@@ -1,9 +1,9 @@
 package org.istanbus.core.service;
 
-import org.istanbus.core.model.Transport;
+import org.istanbus.core.model.PathResult;
 
 import java.util.List;
 
 public interface PathFinderService {
-    List<Transport> find(String fromStop, String toStop);
+    PathResult find(String fromStop, String toStop);
 }

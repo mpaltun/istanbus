@@ -2,7 +2,9 @@ package org.istanbus.core.service.impl;
 
 import com.google.inject.Inject;
 import org.istanbus.core.db.GraphDB;
+import org.istanbus.core.model.PathResult;
 import org.istanbus.core.model.Transport;
+import org.istanbus.core.model.TransportSolution;
 import org.istanbus.core.model.node.Stop;
 import org.istanbus.core.service.PathFinderService;
 import org.neo4j.graphalgo.GraphAlgoFactory;
@@ -41,7 +43,7 @@ public class PathFinderServiceImpl implements PathFinderService {
     }
 
     @Override
-    public List<Transport> find(String fromStop, String toStop) {
+    public PathResult find(String fromStop, String toStop) {
 
         logger.info("finding path from {} to {}", fromStop, toStop);
 
@@ -49,7 +51,15 @@ public class PathFinderServiceImpl implements PathFinderService {
         Node nodeB = stopIndex.get("id", toStop).iterator().next();
 
         Path path = finder.findSinglePath(nodeA, nodeB);
-        return getTransports(path);
+
+        PathResult result = new PathResult();
+        if (path == null)
+        {
+            return result;
+        }
+        TransportSolution solution = getSolutionFromPath(path);
+        result.setSolutions(Arrays.asList(solution));
+        return result;
 
     }
 
@@ -62,14 +72,10 @@ public class PathFinderServiceImpl implements PathFinderService {
         return stop;
     }
 
-    private List<Transport> getTransports(Path path)
+    private TransportSolution getSolutionFromPath(Path path)
     {
         List<Transport> transports = new ArrayList<Transport>();
 
-        if (path == null)
-        {
-            return transports;
-        }
         Transport previousTransport = null;
         for (Relationship relationship : path.relationships()) {
             Node startNode = relationship.getStartNode();
@@ -106,7 +112,7 @@ public class PathFinderServiceImpl implements PathFinderService {
             transports.add(transport);
         }
 
-        return transports;
+        return new TransportSolution(transports);
     }
 
     private List<String> getCommonBusList(Transport transport, List<String> busList) {
