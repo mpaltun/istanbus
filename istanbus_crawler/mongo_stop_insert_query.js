@@ -43,7 +43,9 @@ db.bus.find().forEach(function(bus) {
 	for (var i in stops_go) {
 		var stop = stops_go[i];
 		var stop_with_location = db.stop.findOne({id : stop.id});
-		if (stop_with_location) {
+		
+		// check stop has location
+		if (stop_with_location.location) {
 			stop.location = stop_with_location.location;
 		}
 	}
@@ -52,7 +54,8 @@ db.bus.find().forEach(function(bus) {
 	for (var i in stops_turn) {
 		var stop = stops_turn[i];
 		var stop_with_location = db.stop.findOne({id : stop.id});
-		if (stop_with_location) {
+		
+		if (stop_with_location.location) {
 			stop.location = stop_with_location.location;
 		}
 	}
