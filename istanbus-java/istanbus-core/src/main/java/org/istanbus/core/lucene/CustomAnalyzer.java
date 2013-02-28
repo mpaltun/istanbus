@@ -36,7 +36,7 @@ public final class CustomAnalyzer extends ReusableAnalyzerBase
         tok = new LowerCaseFilter(matchVersion, tok);
         tok = new ASCIIFoldingFilter(tok);
         tok = new EdgeNGramTokenFilter(
-                tok, Side.FRONT, 3, 10);
+                tok, Side.FRONT, 1, 10);
 
         return new TokenStreamComponents(src, tok);
     }
