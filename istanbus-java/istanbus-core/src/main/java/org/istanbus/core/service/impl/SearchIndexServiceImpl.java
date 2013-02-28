@@ -10,6 +10,7 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.istanbus.core.dao.BusDAO;
+import org.istanbus.core.lucene.CustomAnalyzer;
 import org.istanbus.core.model.node.Bus;
 import org.istanbus.core.model.node.Stop;
 import org.istanbus.core.service.SearchIndexService;
@@ -61,7 +62,7 @@ public class SearchIndexServiceImpl implements SearchIndexService {
             return null;
         }
 
-        IndexWriterConfig writerConfig = new IndexWriterConfig(Version.LUCENE_36, new StandardAnalyzer(Version.LUCENE_36));
+        IndexWriterConfig writerConfig = new IndexWriterConfig(Version.LUCENE_36, new CustomAnalyzer(Version.LUCENE_36));
         IndexWriter indexWriter = null;
         try {
             indexWriter = new IndexWriter(directory, writerConfig);
@@ -122,7 +123,7 @@ public class SearchIndexServiceImpl implements SearchIndexService {
         }
 
         try {
-            logger.info("{} stops indexed", stopIndexWriter.numDocs());
+            logger.info("{} bus, {} stops indexed", busIndexWriter.numDocs(), stopIndexWriter.numDocs());
         } catch (IOException e) {
             logger.error("error while getting doc count");
         }
@@ -151,15 +152,15 @@ public class SearchIndexServiceImpl implements SearchIndexService {
 
         for (String s : strings) {
             String string = s.toLowerCase(DEFAULT_LOCALE);
-            sb.append(string);
+            sb.append(string).append(" ");
 
-            String asciiString = toASCIIString(string);
-            if (!string.equals(asciiString)) {
-                sb.append(" ").append(asciiString);
-            }
+//            String asciiString = toASCIIString(string);
+//            if (!string.equals(asciiString)) {
+//                sb.append(" ").append(asciiString);
+//            }
         }
 
-        return sb.toString();
+        return sb.toString().trim();
     }
 
     private void addDocumentToIndexWriter(IndexWriter indexWriter, Document document) {

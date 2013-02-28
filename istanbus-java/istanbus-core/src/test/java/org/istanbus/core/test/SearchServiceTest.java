@@ -64,10 +64,21 @@ public class SearchServiceTest {
 
     @Test
     public void enTrStopKeywordTest() {
-        String keywordEn = "uskudar";
-        String keywordTr = "üsküdar";
+        String keywordEn = "kadıköy";
+        String keywordTr = "kadikoy";
         List<SearchResult> resultsEn = searchService.search("stop", keywordEn);
         List<SearchResult> resultsTr = searchService.search("stop", keywordTr);
         Assert.assertEquals(resultsEn.size(), resultsTr.size());
     }
+
+    /**
+     * <a>http://github.com/challenge/istanbus/issues/8</a>
+     */
+    @Test
+    public void testSearchBusIndexWithHyphen() {
+        String keyword = "e-10";
+        List<SearchResult> results = searchService.search("bus", keyword);
+        Assert.assertFalse(results.isEmpty());
+    }
+
 }

@@ -2,7 +2,6 @@ package org.istanbus.core.service.impl;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.index.IndexReader;
@@ -14,6 +13,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.istanbus.core.lucene.CustomAnalyzer;
 import org.istanbus.core.model.SearchIndex;
 import org.istanbus.core.model.SearchResult;
 import org.istanbus.core.model.StopSearchResult;
@@ -75,10 +75,10 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public List<SearchResult> search(String index, String keyword) {
-        QueryParser queryParser = new QueryParser(Version.LUCENE_36, "text", new StandardAnalyzer(Version.LUCENE_36));
+        QueryParser queryParser = new QueryParser(Version.LUCENE_36, "text", new CustomAnalyzer(Version.LUCENE_36));
         Query query = null;
         try {
-            query = queryParser.parse(keyword + "*");
+            query = queryParser.parse(keyword);
         } catch (ParseException e) {
             logger.error("error while parsing query", e);
         }
@@ -94,12 +94,12 @@ public class SearchServiceImpl implements SearchService {
 
         IndexSearcher searcher = searchers.get(searchIndex);
         TopDocs hits = null;
-        logger.info("searching {} for keyword {}", index, keyword);
         try {
             hits = searcher.search(query, 5);
         } catch (IOException e) {
             logger.error("error while searching", e);
         }
+        logger.info("{} results found. index [{}], keyword [{}]", hits.totalHits, index, keyword);
 
         ScoreDoc[] scoreDocs = hits.scoreDocs;
         List<SearchResult> results = getResultsFromDocs(searchIndex, searcher, scoreDocs);
