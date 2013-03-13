@@ -95,7 +95,7 @@ public class SearchServiceImpl implements SearchService {
         IndexSearcher searcher = searchers.get(searchIndex);
         TopDocs hits = null;
         try {
-            hits = searcher.search(query, 5);
+            hits = searcher.search(query, 10);
         } catch (IOException e) {
             logger.error("error while searching", e);
         }

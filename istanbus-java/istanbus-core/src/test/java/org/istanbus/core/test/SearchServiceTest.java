@@ -81,4 +81,23 @@ public class SearchServiceTest {
         Assert.assertFalse(results.isEmpty());
     }
 
+    @Test
+    public void testSearchWithExactBusCode()
+    {
+        String busCode = "12";
+        List<SearchResult> results = searchService.search("bus", busCode);
+
+        boolean foundInResults = false;
+        for (SearchResult result : results)
+        {
+            if (busCode.equals(result.getId()))
+            {
+                foundInResults = true;
+            }
+        }
+
+        Assert.assertTrue(foundInResults);
+
+    }
+
 }

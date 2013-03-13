@@ -2,7 +2,6 @@ package org.istanbus.core.service.impl;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexWriter;
@@ -153,11 +152,6 @@ public class SearchIndexServiceImpl implements SearchIndexService {
         for (String s : strings) {
             String string = s.toLowerCase(DEFAULT_LOCALE);
             sb.append(string).append(" ");
-
-//            String asciiString = toASCIIString(string);
-//            if (!string.equals(asciiString)) {
-//                sb.append(" ").append(asciiString);
-//            }
         }
 
         return sb.toString().trim();
@@ -169,16 +163,6 @@ public class SearchIndexServiceImpl implements SearchIndexService {
         } catch (IOException e) {
             logger.error("error while adding document", e);
         }
-    }
-
-    private String toASCIIString(String string) {
-        return string
-                .replace('ü', 'u')
-                .replace('ı', 'i')
-                .replace('ş', 's')
-                .replace('ç', 'c')
-                .replace('ö', 'o')
-                .replace('ğ', 'g');
     }
 
 }
