@@ -5,6 +5,7 @@ import com.google.inject.name.Named;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
@@ -57,7 +58,8 @@ public class SearchServiceImpl implements SearchService {
         FSDirectory directory = null;
         try {
             directory = FSDirectory.open(indexFolder);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             logger.error("exception while opening index folder", e);
         }
         IndexReader indexReader = null;
@@ -75,36 +77,61 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public List<SearchResult> search(String index, String keyword) {
-        QueryParser queryParser = new QueryParser(Version.LUCENE_36, "text", new CustomAnalyzer(Version.LUCENE_36));
+
+        SearchIndex searchIndex = getSearchIndex(index);
+        if (searchIndex != null) {
+            Query query = getQuery(keyword);
+            if (query != null) {
+                return searchAndCollectResults(searchIndex, query);
+            }
+        }
+
+        return Collections.EMPTY_LIST;
+    }
+
+    private List<SearchResult> searchAndCollectResults(SearchIndex searchIndex, Query query) {
+
+        IndexSearcher searcher = searchers.get(searchIndex);
+
+        TopDocs hits = null;
+        try {
+            hits = searcher.search(query, 5);
+        }
+        catch (IOException e) {
+            logger.error("error while searching", e);
+            return Collections.EMPTY_LIST;
+        }
+
+        logger.info("{} results found. index: {}, query: {}", hits.totalHits, searchIndex, query);
+        return getResultsFromDocs(searchIndex, searcher, hits.scoreDocs);
+    }
+
+    private Query getQuery(String keyword) {
+        MultiFieldQueryParser queryParser = new MultiFieldQueryParser(Version.LUCENE_36 ,
+                                                                      new String[] {"id", "name"},
+                                                                      new CustomAnalyzer(Version.LUCENE_36));
+        queryParser.setDefaultOperator(QueryParser.Operator.AND);
+
         Query query = null;
         try {
             query = queryParser.parse(keyword);
-        } catch (ParseException e) {
+        }
+        catch (ParseException e) {
             logger.error("error while parsing query", e);
         }
 
-        SearchIndex searchIndex;
+        return query;
+    }
+
+    private SearchIndex getSearchIndex(String index) {
+        SearchIndex searchIndex = null;
         try {
-            searchIndex = SearchIndex.valueOf(index);
+            searchIndex =  SearchIndex.valueOf(index);
         }
         catch (IllegalArgumentException exception) {
             logger.warn("index {} not found", index);
-            return Collections.emptyList();
         }
-
-        IndexSearcher searcher = searchers.get(searchIndex);
-        TopDocs hits = null;
-        try {
-            hits = searcher.search(query, 10);
-        } catch (IOException e) {
-            logger.error("error while searching", e);
-        }
-        logger.info("{} results found. index [{}], keyword [{}]", hits.totalHits, index, keyword);
-
-        ScoreDoc[] scoreDocs = hits.scoreDocs;
-        List<SearchResult> results = getResultsFromDocs(searchIndex, searcher, scoreDocs);
-
-        return results;
+        return searchIndex;
     }
 
     private List<SearchResult> getResultsFromDocs(SearchIndex index, IndexSearcher searcher, ScoreDoc[] docs) {
@@ -120,7 +147,8 @@ public class SearchServiceImpl implements SearchService {
         Document doc = null;
         try {
             doc = searcher.doc(scoreDoc.doc);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             logger.error("error while getting doc from stopSearcher", e);
         }
 

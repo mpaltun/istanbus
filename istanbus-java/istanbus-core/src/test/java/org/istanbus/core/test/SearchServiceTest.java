@@ -84,19 +84,12 @@ public class SearchServiceTest {
     @Test
     public void testSearchWithExactBusCode()
     {
+        // 12 should be first result
         String busCode = "12";
         List<SearchResult> results = searchService.search("bus", busCode);
+        SearchResult searchResult = results.get(0);
 
-        boolean foundInResults = false;
-        for (SearchResult result : results)
-        {
-            if (busCode.equals(result.getId()))
-            {
-                foundInResults = true;
-            }
-        }
-
-        Assert.assertTrue(foundInResults);
+        Assert.assertEquals(busCode, searchResult.getId());
 
     }
 

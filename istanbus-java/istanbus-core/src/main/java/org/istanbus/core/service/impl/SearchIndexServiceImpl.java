@@ -97,9 +97,7 @@ public class SearchIndexServiceImpl implements SearchIndexService {
             String busCode = bus.getId();
             String busName = bus.getName();
 
-            String[] busTextFields = { busCode, busName };
-
-            Document busDoc = getDocument(busCode, busName, busTextFields);
+            Document busDoc = getDocument(busCode, busName);
             addDocumentToIndexWriter(busIndexWriter, busDoc);
 
             List<Stop> stops = new ArrayList<Stop>();
@@ -111,9 +109,8 @@ public class SearchIndexServiceImpl implements SearchIndexService {
                 String stopCode = stop.getId();
                 if (indexedStops.add(stopCode)) {
                     String stopName = stop.getName();
-                    String[] stopTextFields = { stopName };
 
-                    Document stopDoc = getDocument(stopCode, stopName, stopTextFields);
+                    Document stopDoc = getDocument(stopCode, stopName);
                     stopDoc.add(new Field("district", stop.getDistrict(), Field.Store.YES, Field.Index.NOT_ANALYZED));
 
                     addDocumentToIndexWriter(stopIndexWriter, stopDoc);
@@ -131,30 +128,15 @@ public class SearchIndexServiceImpl implements SearchIndexService {
 
     }
 
-    private Document getDocument(String id, String name, String... textFields) {
-        Field idField = new Field("id", id, Field.Store.YES, Field.Index.NOT_ANALYZED);
-        Field nameField = new Field("name", name, Field.Store.YES, Field.Index.NOT_ANALYZED);
+    private Document getDocument(String id, String name) {
+        Field idField = new Field("id", id, Field.Store.YES, Field.Index.ANALYZED);
+        Field nameField = new Field("name", name, Field.Store.YES, Field.Index.ANALYZED);
 
         Document document = new Document();
         document.add(idField);
         document.add(nameField);
 
-        String text = prepareSearchIndexText(textFields);
-        Field textField = new Field("text", text, Field.Store.NO, Field.Index.ANALYZED);
-        document.add(textField);
-
         return document;
-    }
-
-    private String prepareSearchIndexText(String... strings) {
-        StringBuilder sb = new StringBuilder();
-
-        for (String s : strings) {
-            String string = s.toLowerCase(DEFAULT_LOCALE);
-            sb.append(string).append(" ");
-        }
-
-        return sb.toString().trim();
     }
 
     private void addDocumentToIndexWriter(IndexWriter indexWriter, Document document) {
