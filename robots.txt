@@ -1,0 +1,12 @@
+### BEGIN ###
+#
+# www.istanbus.org
+# 
+
+# Rules
+
+User-agent: *
+Disallow:
+
+
+###   END  ###
