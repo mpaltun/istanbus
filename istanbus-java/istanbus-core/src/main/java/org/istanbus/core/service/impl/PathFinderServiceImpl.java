@@ -5,6 +5,7 @@ import org.istanbus.core.db.GraphDB;
 import org.istanbus.core.model.PathResult;
 import org.istanbus.core.model.Transport;
 import org.istanbus.core.model.TransportSolution;
+import org.istanbus.core.model.node.Bus;
 import org.istanbus.core.model.node.Stop;
 import org.istanbus.core.service.PathFinderService;
 import org.neo4j.graphalgo.GraphAlgoFactory;
@@ -30,89 +31,51 @@ public class PathFinderServiceImpl implements PathFinderService {
     private static final Logger logger = LoggerFactory.getLogger(PathFinderServiceImpl.class);
 
     private final GraphDatabaseService db;
-    private final Index<Node> stopIndex;
+    private final Index<Node> busIndex;
     private final PathFinder<? extends Path> finder;
 
     @Inject
     public PathFinderServiceImpl(GraphDB graphDB) {
         db = graphDB.getInstance();
-        stopIndex = db.index().forNodes("stops");
+        busIndex = db.index().forNodes("bus");
 
         Expander expander = Traversal.expanderForAllTypes(Direction.OUTGOING);
-        this.finder = GraphAlgoFactory.shortestPath(expander, 10);
+        this.finder = GraphAlgoFactory.shortestPath(expander, 5);
     }
 
     @Override
-    public PathResult find(String fromStop, String toStop) {
+    public List<Bus> find(String fromBus, String toBus) {
 
-        logger.info("finding path from {} to {}", fromStop, toStop);
+        logger.info("finding path from {} to {}", fromBus, toBus);
 
-        Node nodeA = stopIndex.get("id", fromStop).iterator().next();
-        Node nodeB = stopIndex.get("id", toStop).iterator().next();
+        Node nodeA = busIndex.get("id", fromBus).iterator().next();
+        Node nodeB = busIndex.get("id", toBus).iterator().next();
 
         Path path = finder.findSinglePath(nodeA, nodeB);
+        return getSolutionFromPath(path);
 
-        PathResult result = new PathResult();
-        if (path == null)
+    }
+
+    private Bus getBusFromNode(Node node)
+    {
+        Bus bus = new Bus();
+        bus.setId((String) node.getProperty("id"));
+        bus.setName((String) node.getProperty("label"));
+
+        return bus;
+    }
+
+    private List<Bus> getSolutionFromPath(Path path)
+    {
+
+        List<Bus> result = new ArrayList<Bus>();
+        for (Node node : path.nodes())
         {
-            return result;
+            Bus bus = getBusFromNode(node);
+            result.add(bus);
         }
-        TransportSolution solution = getSolutionFromPath(path);
-        result.setSolutions(Arrays.asList(solution));
         return result;
 
-    }
-
-    private Stop getStopFromNode(Node node)
-    {
-        Stop stop = new Stop();
-        stop.setId((String) node.getProperty("id"));
-        stop.setName((String) node.getProperty("label"));
-
-        return stop;
-    }
-
-    private TransportSolution getSolutionFromPath(Path path)
-    {
-        List<Transport> transports = new ArrayList<Transport>();
-
-        Transport previousTransport = null;
-        for (Relationship relationship : path.relationships()) {
-            Node startNode = relationship.getStartNode();
-            Node endNode = relationship.getEndNode();
-            List<String> busList = Arrays.asList((String[]) relationship.getProperty("busList"));
-
-            // set common bus list for following transports
-            if (previousTransport != null) {
-                List<String> commonBusList = getCommonBusList(previousTransport, busList);
-                if (!commonBusList.isEmpty()) {
-                    previousTransport.setStopCount(previousTransport.getStopCount() + 1);
-                    previousTransport.setBusList(commonBusList);
-                    // last stop
-                    Stop to = getStopFromNode(endNode);
-                    previousTransport.setTo(to);
-                    continue;
-                }
-            }
-
-            Transport transport = new Transport();
-            transport.setBusList(busList);
-
-
-            int stopCount = (Integer) relationship.getProperty("stopCount");
-            transport.setStopCount(stopCount);
-
-            Stop from = getStopFromNode(startNode);
-            transport.setFrom(from);
-
-            Stop to = getStopFromNode(endNode);
-            transport.setTo(to);
-
-            previousTransport = transport;
-            transports.add(transport);
-        }
-
-        return new TransportSolution(transports);
     }
 
     private List<String> getCommonBusList(Transport transport, List<String> busList) {

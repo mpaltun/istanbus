@@ -22,7 +22,7 @@ public class GraphBuildTest {
     @Test
     public void buildGraph() throws Exception {
         graphBuildService.buildFullGraph();
-        Assert.assertTrue(graphBuildService.testGraph("taksim-beyoglu"));
+        Assert.assertTrue(graphBuildService.testGraph("11M"));
     }
 
 }

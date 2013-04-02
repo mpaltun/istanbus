@@ -85,7 +85,7 @@ public class SearchIndexServiceImpl implements SearchIndexService {
 
     @Override
     public void indexAll() {
-        List<Bus> busList = busDAO.loadAllBuses();
+        List<Bus> busList = busDAO.loadAll();
 
         Set<String> indexedStops = new HashSet<String>();
 

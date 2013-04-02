@@ -6,6 +6,7 @@ import org.apache.thrift.TException;
 import org.istanbus.core.model.PathResult;
 import org.istanbus.core.model.SearchResult;
 import org.istanbus.core.model.Transport;
+import org.istanbus.core.model.node.Bus;
 import org.istanbus.core.service.PathFinderService;
 import org.istanbus.core.service.SearchService;
 import org.slf4j.Logger;
@@ -30,7 +31,7 @@ public class IstanbusJavaServiceImpl implements IstanbusJavaService.Iface {
 
     @Override
     public String recommend(String fromStop, String toStop) throws TException {
-        PathResult result = pathFinderService.find(fromStop, toStop);
+        List<Bus> result = pathFinderService.find(fromStop, toStop);
         return new Gson().toJson(result);
     }
 

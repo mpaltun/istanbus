@@ -10,8 +10,9 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.MongoClient;
-import org.istanbus.core.dao.BusDAO;
+import org.istanbus.core.dao.StopDAO;
 import org.istanbus.core.model.node.Bus;
+import org.istanbus.core.model.node.Stop;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,20 +20,24 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BusMongoDAO implements BusDAO {
-
-    private static final Logger logger = LoggerFactory.getLogger(BusMongoDAO.class);
+/**
+ * Created with IntelliJ IDEA.
+ * User: mustafa
+ */
+public class StopMongoDAO implements StopDAO
+{
+    private static final Logger logger = LoggerFactory.getLogger(StopMongoDAO.class);
 
     private String dbName;
 
     @Inject
-    public BusMongoDAO(@Named("mongo.db") String dbName) {
+    public StopMongoDAO(@Named("mongo.db") String dbName) {
         this.dbName = dbName;
     }
 
     @Override
-    public List<Bus> loadAll() {
-        List<Bus> result = new ArrayList<Bus>();
+    public List<Stop> loadAll() {
+        List<Stop> result = new ArrayList<Stop>();
         MongoClient mongoClient = null;
         try {
             mongoClient = new MongoClient();
@@ -42,7 +47,7 @@ public class BusMongoDAO implements BusDAO {
         }
 
         DB db = mongoClient.getDB(dbName);
-        DBCollection collection = db.getCollection("bus");
+        DBCollection collection = db.getCollection("stop");
 
         BasicDBObject query = new BasicDBObject();
 
@@ -50,15 +55,14 @@ public class BusMongoDAO implements BusDAO {
         fields.put("_id", 0);
         fields.put("id", 1);
         fields.put("name", 1);
-        fields.put("stops.go", 1);
-        fields.put("stops.turn", 1);
+        fields.put("bus", 1);
 
         DBCursor cursor = collection.find(query, fields);
         Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
 
         while (cursor.hasNext()) {
-            Bus bus = gson.fromJson(cursor.next().toString(), Bus.class);
-            result.add(bus);
+            Stop stop = gson.fromJson(cursor.next().toString(), Stop.class);
+            result.add(stop);
         }
 
         cursor.close();

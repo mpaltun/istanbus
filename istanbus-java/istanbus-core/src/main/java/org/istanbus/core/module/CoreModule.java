@@ -6,7 +6,7 @@ import com.google.inject.name.Names;
 import org.istanbus.core.dao.BusDAO;
 import org.istanbus.core.dao.StopDAO;
 import org.istanbus.core.dao.mongo.BusMongoDAO;
-import org.istanbus.core.dao.neo4j.StopNeo4jDAO;
+import org.istanbus.core.dao.mongo.StopMongoDAO;
 import org.istanbus.core.db.GraphDB;
 import org.istanbus.core.service.*;
 import org.istanbus.core.service.impl.*;
@@ -24,13 +24,10 @@ public class CoreModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(StopDAO.class).to(StopNeo4jDAO.class);
-        bind(StopNeo4jDAO.class).in(Scopes.SINGLETON);
+        bind(StopDAO.class).to(StopMongoDAO.class);
+        bind(StopMongoDAO.class).in(Scopes.SINGLETON);
 
         bind(BusDAO.class).to(BusMongoDAO.class).in(Scopes.SINGLETON);
-
-        bind(StopService.class).to(StopServiceImpl.class);
-        bind(StopServiceImpl.class).in(Scopes.SINGLETON);
 
         bind(PathFinderService.class).to(PathFinderServiceImpl.class);
         bind(PathFinderServiceImpl.class).in(Scopes.SINGLETON);
