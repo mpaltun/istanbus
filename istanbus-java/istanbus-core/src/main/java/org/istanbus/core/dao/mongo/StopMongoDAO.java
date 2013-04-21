@@ -38,16 +38,8 @@ public class StopMongoDAO implements StopDAO
     @Override
     public List<Stop> loadAll() {
         List<Stop> result = new ArrayList<Stop>();
-        MongoClient mongoClient = null;
-        try {
-            mongoClient = new MongoClient();
-        } catch (UnknownHostException e) {
-            logger.error("", e);
-            return result;
-        }
 
-        DB db = mongoClient.getDB(dbName);
-        DBCollection collection = db.getCollection("stop");
+        DBCollection collection = getCollection();
 
         BasicDBObject query = new BasicDBObject();
 
@@ -68,5 +60,34 @@ public class StopMongoDAO implements StopDAO
         cursor.close();
         return result;
 
+    }
+
+    private DBCollection getCollection()
+    {
+        MongoClient mongoClient = null;
+        try
+        {
+            mongoClient = new MongoClient();
+        } catch (UnknownHostException e)
+        {
+            logger.error("", e);
+        }
+
+        DB db = mongoClient.getDB(dbName);
+        return db.getCollection("stop");
+    }
+
+    @Override
+    public Stop loadById(String id)
+    {
+        DBCollection collection = getCollection();
+        DBCursor cursor = collection.find(new BasicDBObject("id", id));
+
+        if (cursor.hasNext())
+        {
+            Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
+            return gson.fromJson(cursor.next().toString(), Stop.class);
+        }
+        return null;
     }
 }

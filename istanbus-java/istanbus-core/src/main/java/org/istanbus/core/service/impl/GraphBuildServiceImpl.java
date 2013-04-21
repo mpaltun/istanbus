@@ -67,7 +67,7 @@ public class GraphBuildServiceImpl implements GraphBuildService {
             else {
                 logger.info("Linking bus {} to bus {}", previous.getProperty(id), current.getProperty(id));
 
-                checkAndCreateRelationship(previous, current, stop.getId());
+                checkAndCreateRelationship(previous, current, stop);
 
                 tx.success();
                 previous = current;
@@ -124,34 +124,40 @@ public class GraphBuildServiceImpl implements GraphBuildService {
      * Checks a relationship exists between nodes and creates if there is none
      * @param previous
      * @param current
-     * @param stopId
+     * @param stop
      */
-    private void checkAndCreateRelationship(Node previous, Node current, String stopId) {
+    private void checkAndCreateRelationship(Node previous, Node current, Stop stop) {
         String[] stopList = null;
         Relationship relationship = getOldRelationShip(previous, current);
         if (relationship == null) {
             relationship = previous.createRelationshipTo(current, RelationShip.DIRECTION_GO);
-            stopList = new String[] { stopId };
+            stopList = new String[] { stop.getId() };
         }
         else {
 
             stopList = (String[]) relationship.getProperty("stopList");
 
-            boolean notFound = true;
-            for (String stop : stopList) {
-                if (stop.equals(stopId)) {
-                    notFound = false;
+            boolean found = false;
+            for (String commonStop : stopList) {
+                if (commonStop.equals(stop.getId())) {
+                    found = true;
                     break;
                 }
             }
-            if (notFound) {
-                String[] tmpList = new String[stopList.length + 1];
-                System.arraycopy(stopList, 0, tmpList, 0, stopList.length);
-                tmpList[stopList.length] = stopId;
+            if (!found) {
+                String[] tmpList = addToStops(stopList, stop.getId());
                 stopList = tmpList;
             }
         }
         relationship.setProperty("stopList", stopList);
+    }
+
+    private String[] addToStops(String[] stops, String stopId)
+    {
+        String[] tmpList = new String[stops.length + 1];
+        System.arraycopy(stops, 0, tmpList, 0, stops.length);
+        tmpList[stops.length] = stopId;
+        return tmpList;
     }
 
 }

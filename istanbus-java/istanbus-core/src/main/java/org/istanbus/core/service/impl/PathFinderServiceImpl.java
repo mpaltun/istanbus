@@ -1,10 +1,10 @@
 package org.istanbus.core.service.impl;
 
 import com.google.inject.Inject;
+import org.istanbus.core.dao.StopDAO;
 import org.istanbus.core.db.GraphDB;
-import org.istanbus.core.model.PathResult;
-import org.istanbus.core.model.Transport;
-import org.istanbus.core.model.TransportSolution;
+import org.istanbus.core.model.Route;
+import org.istanbus.core.model.SuggestedRoute;
 import org.istanbus.core.model.node.Bus;
 import org.istanbus.core.model.node.Stop;
 import org.istanbus.core.service.PathFinderService;
@@ -23,7 +23,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class PathFinderServiceImpl implements PathFinderService {
@@ -34,26 +35,100 @@ public class PathFinderServiceImpl implements PathFinderService {
     private final Index<Node> busIndex;
     private final PathFinder<? extends Path> finder;
 
+    private StopDAO stopDAO;
+
     @Inject
-    public PathFinderServiceImpl(GraphDB graphDB) {
+    public PathFinderServiceImpl(GraphDB graphDB, StopDAO stopDAO) {
+
+        this.stopDAO = stopDAO;
         db = graphDB.getInstance();
         busIndex = db.index().forNodes("bus");
 
-        Expander expander = Traversal.expanderForAllTypes(Direction.OUTGOING);
-        this.finder = GraphAlgoFactory.shortestPath(expander, 5);
+        Expander expander = Traversal.expanderForAllTypes(Direction.BOTH);
+        finder = GraphAlgoFactory.shortestPath(expander, 3);
     }
 
     @Override
-    public List<Bus> find(String fromBus, String toBus) {
+    public List<SuggestedRoute> find(String fromStopId, String toStopId) {
 
-        logger.info("finding path from {} to {}", fromBus, toBus);
+        logger.info("finding path from {} to {}", fromStopId, toStopId);
 
-        Node nodeA = busIndex.get("id", fromBus).iterator().next();
-        Node nodeB = busIndex.get("id", toBus).iterator().next();
+        Stop fromStop = stopDAO.loadById(fromStopId);
+        Stop toStop = stopDAO.loadById(toStopId);
+
+        List<Bus> fromBuses = fromStop.getBus();
+        List<Bus> toBuses = toStop.getBus();
+
+        List<SuggestedRoute> suggestedRoutes = new ArrayList<SuggestedRoute>();
+        for (Bus fromBus: fromBuses)
+        {
+            for (Bus toBus: toBuses)
+            {
+                if (fromBus.getId().equals(toBus.getId()))
+                {
+                    // single bus solution
+                    SuggestedRoute suggestedRoute = getSingleSuggestedRoute(fromStop, toStop, toBus);
+                    suggestedRoutes.add(suggestedRoute);
+
+                    continue;
+                }
+
+                List<Route> routes = findForBus(fromBus.getId(), toBus.getId());
+                if (routes != null && !routes.isEmpty())
+                {
+                    Route firstRoute = routes.get(0);
+                    firstRoute.setFromStop(new String[] { fromStopId });
+
+                    // set last route destination
+                    Route lastRoute = routes.get(routes.size() - 1);
+                    lastRoute.setFromStop(routes.get(routes.size() - 2).getToStop());
+                    lastRoute.setToStop(new String[] { toStopId });
+
+                    SuggestedRoute suggestedRoute = new SuggestedRoute(routes);
+                    suggestedRoutes.add(suggestedRoute);
+                }
+            }
+        }
+
+        Collections.sort(suggestedRoutes, new Comparator<SuggestedRoute>()
+        {
+            @Override
+            public int compare(SuggestedRoute route1, SuggestedRoute route2)
+            {
+                return route1.getRoutes().size() - route2.getRoutes().size();
+            }
+        });
+
+        return suggestedRoutes.subList(0, 5);
+    }
+
+    private SuggestedRoute getSingleSuggestedRoute(Stop fromStop, Stop toStop, Bus toBus)
+    {
+        Route route = new Route();
+        route.setBus(toBus);
+
+        route.setToStop(new String[] { toStop.getId() });
+        route.setFromStop(new String[] { fromStop.getId() });
+
+        return new SuggestedRoute(Arrays.asList(route));
+    }
+
+    private List<String> getAsStringList(List<Bus> busList) {
+        List<String> stringList = new ArrayList<String>();
+        for (Bus bus : busList)
+        {
+            stringList.add(bus.getId());
+        }
+        return stringList;
+    }
+
+    private List<Route> findForBus(String fromBusId, String toBusId)
+    {
+        Node nodeA = busIndex.get("id", fromBusId).iterator().next();
+        Node nodeB = busIndex.get("id", toBusId).iterator().next();
 
         Path path = finder.findSinglePath(nodeA, nodeB);
-        return getSolutionFromPath(path);
-
+        return getSolutionFromPath(path, fromBusId, toBusId);
     }
 
     private Bus getBusFromNode(Node node)
@@ -65,28 +140,66 @@ public class PathFinderServiceImpl implements PathFinderService {
         return bus;
     }
 
-    private List<Bus> getSolutionFromPath(Path path)
+    private List<Route> getSolutionFromPath(Path path, String fromBusId, String toBusId)
     {
-
-        List<Bus> result = new ArrayList<Bus>();
-        for (Node node : path.nodes())
-        {
-            Bus bus = getBusFromNode(node);
-            result.add(bus);
+        if (path == null) {
+            logger.info("no bus path found. from {}, to {}", fromBusId, toBusId);
+            return null;
         }
+
+        Route previousRoute = null;
+
+        List<Route> result = new ArrayList<Route>();
+        for (Relationship relationship : path.relationships())
+        {
+            Bus first = getBusFromNode(relationship.getStartNode());
+            Bus second = getBusFromNode(relationship.getEndNode());
+
+            String[] stops = (String[]) relationship.getProperty("stopList");
+
+            if (previousRoute == null)
+            {
+                if (second.getId().equals(fromBusId))
+                {
+                    Bus temp = first;
+
+                    first = second;
+                    second = temp;
+                }
+            }
+            else
+            {
+                if (previousRoute.getBus().getId().equals(first.getId()))
+                {
+                    result.remove(result.size() - 1);
+                }
+            }
+
+            Route firstRoute = getRouteFromBus(first, stops);
+            if (previousRoute != null)
+            {
+                firstRoute.setFromStop(previousRoute.getToStop());
+            }
+            result.add(firstRoute);
+
+            Route secondRoute = getRouteFromBus(second, stops);
+            result.add(secondRoute);
+
+            previousRoute = secondRoute;
+
+        }
+
         return result;
 
     }
 
-    private List<String> getCommonBusList(Transport transport, List<String> busList) {
-        HashSet<String> set = new HashSet<String>(transport.getBusList());
+    private Route getRouteFromBus(Bus bus, String[] stops)
+    {
+        Route route = new Route();
+        route.setBus(bus);
+        route.setToStop(stops);
 
-        List<String> commonBusList = new ArrayList<String>();
-        for (String bus : busList) {
-            if (set.contains(bus)) {
-                commonBusList.add(bus);
-            }
-        }
-        return commonBusList;
+        return route;
     }
+
 }

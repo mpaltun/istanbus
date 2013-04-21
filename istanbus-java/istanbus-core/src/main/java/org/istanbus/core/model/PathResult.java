@@ -3,13 +3,13 @@ package org.istanbus.core.model;
 import java.util.List;
 
 public class PathResult {
-    List<TransportSolution> solutions;
+    List<SuggestedRoute> solutions;
 
-    public List<TransportSolution> getSolutions() {
+    public List<SuggestedRoute> getSolutions() {
         return solutions;
     }
 
-    public void setSolutions(List<TransportSolution> solutions) {
+    public void setSolutions(List<SuggestedRoute> solutions) {
         this.solutions = solutions;
     }
 }
