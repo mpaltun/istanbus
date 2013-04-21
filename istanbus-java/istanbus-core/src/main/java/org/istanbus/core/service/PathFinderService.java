@@ -1,10 +1,7 @@
 package org.istanbus.core.service;
 
-import org.istanbus.core.model.Route;
-import org.istanbus.core.model.SuggestedRoute;
-
-import java.util.List;
+import org.istanbus.core.model.PathResult;
 
 public interface PathFinderService {
-    List<SuggestedRoute> find(String fromBus, String toBus);
+    PathResult find(String fromBus, String toBus);
 }

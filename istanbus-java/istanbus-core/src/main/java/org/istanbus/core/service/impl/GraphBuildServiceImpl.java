@@ -57,20 +57,21 @@ public class GraphBuildServiceImpl implements GraphBuildService {
     private void linkBuses(Stop stop)
     {
         Transaction tx = db.beginTx();
-        Node previous = null;
-        for (Bus bus : stop.getBus()) {
-            Node current = createNodeFromBus(bus);
-            if (previous == null) {
-                // here comes only once
-                previous = current;
-            }
-            else {
-                logger.info("Linking bus {} to bus {}", previous.getProperty(id), current.getProperty(id));
+        for (Bus bus1 : stop.getBus()) {
+            for (Bus bus2 : stop.getBus())
+            {
+                if (bus1.equals(bus2))
+                {
+                    continue;
+                }
 
-                checkAndCreateRelationship(previous, current, stop);
+                Node node1 = createNodeFromBus(bus1);
+                Node node2 = createNodeFromBus(bus2);
+
+                logger.info("Linking bus {} to bus {}", bus1.getId(), bus2.getId());
+                checkAndCreateRelationship(node1, node2, stop);
 
                 tx.success();
-                previous = current;
             }
         }
         tx.finish();

@@ -3,6 +3,7 @@ package org.istanbus.core.service.impl;
 import com.google.inject.Inject;
 import org.istanbus.core.dao.StopDAO;
 import org.istanbus.core.db.GraphDB;
+import org.istanbus.core.model.PathResult;
 import org.istanbus.core.model.Route;
 import org.istanbus.core.model.SuggestedRoute;
 import org.istanbus.core.model.node.Bus;
@@ -25,11 +26,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PathFinderServiceImpl implements PathFinderService {
 
     private static final Logger logger = LoggerFactory.getLogger(PathFinderServiceImpl.class);
+
+    private static final int MAX_SUGGESTED_ROUTES = 2;
 
     private final GraphDatabaseService db;
     private final Index<Node> busIndex;
@@ -45,11 +50,11 @@ public class PathFinderServiceImpl implements PathFinderService {
         busIndex = db.index().forNodes("bus");
 
         Expander expander = Traversal.expanderForAllTypes(Direction.BOTH);
-        finder = GraphAlgoFactory.shortestPath(expander, 3);
+        finder = GraphAlgoFactory.shortestPath(expander, MAX_SUGGESTED_ROUTES);
     }
 
     @Override
-    public List<SuggestedRoute> find(String fromStopId, String toStopId) {
+    public PathResult find(String fromStopId, String toStopId) {
 
         logger.info("finding path from {} to {}", fromStopId, toStopId);
 
@@ -59,17 +64,15 @@ public class PathFinderServiceImpl implements PathFinderService {
         List<Bus> fromBuses = fromStop.getBus();
         List<Bus> toBuses = toStop.getBus();
 
-        List<SuggestedRoute> suggestedRoutes = new ArrayList<SuggestedRoute>();
+        Set<Bus> commons = getCommonBuses(fromBuses, toBuses);
+
+        List<SuggestedRoute> allSuggestedRoutes = new ArrayList<SuggestedRoute>();
         for (Bus fromBus: fromBuses)
         {
             for (Bus toBus: toBuses)
             {
-                if (fromBus.getId().equals(toBus.getId()))
+                if (commons.contains(toBus) || commons.contains(fromBus))
                 {
-                    // single bus solution
-                    SuggestedRoute suggestedRoute = getSingleSuggestedRoute(fromStop, toStop, toBus);
-                    suggestedRoutes.add(suggestedRoute);
-
                     continue;
                 }
 
@@ -85,12 +88,12 @@ public class PathFinderServiceImpl implements PathFinderService {
                     lastRoute.setToStop(new String[] { toStopId });
 
                     SuggestedRoute suggestedRoute = new SuggestedRoute(routes);
-                    suggestedRoutes.add(suggestedRoute);
+                    allSuggestedRoutes.add(suggestedRoute);
                 }
             }
         }
 
-        Collections.sort(suggestedRoutes, new Comparator<SuggestedRoute>()
+        Collections.sort(allSuggestedRoutes, new Comparator<SuggestedRoute>()
         {
             @Override
             public int compare(SuggestedRoute route1, SuggestedRoute route2)
@@ -99,7 +102,32 @@ public class PathFinderServiceImpl implements PathFinderService {
             }
         });
 
-        return suggestedRoutes.subList(0, 5);
+        int limit = 5;
+        if (allSuggestedRoutes.size() < limit)
+        {
+            limit = allSuggestedRoutes.size();
+        }
+
+        List<SuggestedRoute> suggestedRoutes = allSuggestedRoutes.subList(0, limit);
+
+        PathResult pathResult = new PathResult();
+        pathResult.setPerfectRoutes(commons);
+        pathResult.setSuggestions(suggestedRoutes);
+        return pathResult;
+    }
+
+    private Set<Bus> getCommonBuses(List<Bus> fromBusList, List<Bus> toBusList)
+    {
+        HashSet<Bus> commons = new HashSet<Bus>();
+        HashSet<Bus> fromBusListSet = new HashSet<Bus>(fromBusList);
+        for (Bus toBus : toBusList)
+        {
+            if (fromBusListSet.contains(toBus))
+            {
+                commons.add(toBus);
+            }
+        }
+        return commons;
     }
 
     private SuggestedRoute getSingleSuggestedRoute(Stop fromStop, Stop toStop, Bus toBus)

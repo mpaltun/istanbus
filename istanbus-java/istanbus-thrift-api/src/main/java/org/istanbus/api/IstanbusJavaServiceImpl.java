@@ -3,6 +3,7 @@ package org.istanbus.api;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import org.apache.thrift.TException;
+import org.istanbus.core.model.PathResult;
 import org.istanbus.core.model.Route;
 import org.istanbus.core.model.SearchResult;
 import org.istanbus.core.model.SuggestedRoute;
@@ -30,7 +31,7 @@ public class IstanbusJavaServiceImpl implements IstanbusJavaService.Iface {
 
     @Override
     public String recommend(String fromStop, String toStop) throws TException {
-        List<SuggestedRoute> result = pathFinderService.find(fromStop, toStop);
+        PathResult result = pathFinderService.find(fromStop, toStop);
         return new Gson().toJson(result);
     }
 

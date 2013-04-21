@@ -36,6 +36,25 @@ public class Bus
         this.stops = stops;
     }
 
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Bus bus = (Bus) o;
+
+        if (!id.equals(bus.id)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return id.hashCode();
+    }
+
     public class Stops
     {
         private List<Stop> go;
