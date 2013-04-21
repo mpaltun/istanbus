@@ -66,13 +66,14 @@ public class PathFinderServiceImpl implements PathFinderService {
 
         Set<Bus> commons = getCommonBuses(fromBuses, toBuses);
 
-        List<SuggestedRoute> allSuggestedRoutes = new ArrayList<SuggestedRoute>();
+        List<SuggestedRoute> suggestedRoutes = new ArrayList<SuggestedRoute>();
         for (Bus fromBus: fromBuses)
         {
             for (Bus toBus: toBuses)
             {
                 if (commons.contains(toBus) || commons.contains(fromBus))
                 {
+                    // ignore common routes
                     continue;
                 }
 
@@ -88,37 +89,22 @@ public class PathFinderServiceImpl implements PathFinderService {
                     lastRoute.setToStop(new String[] { toStopId });
 
                     SuggestedRoute suggestedRoute = new SuggestedRoute(routes);
-                    allSuggestedRoutes.add(suggestedRoute);
+                    suggestedRoutes.add(suggestedRoute);
                 }
             }
         }
 
-        Collections.sort(allSuggestedRoutes, new Comparator<SuggestedRoute>()
-        {
-            @Override
-            public int compare(SuggestedRoute route1, SuggestedRoute route2)
-            {
-                return route1.getRoutes().size() - route2.getRoutes().size();
-            }
-        });
-
-        int limit = 5;
-        if (allSuggestedRoutes.size() < limit)
-        {
-            limit = allSuggestedRoutes.size();
-        }
-
-        List<SuggestedRoute> suggestedRoutes = allSuggestedRoutes.subList(0, limit);
-
         PathResult pathResult = new PathResult();
         pathResult.setPerfectRoutes(commons);
         pathResult.setSuggestions(suggestedRoutes);
-        return pathResult;
+
+        return pathResult.sort().limit();
     }
 
     private Set<Bus> getCommonBuses(List<Bus> fromBusList, List<Bus> toBusList)
     {
         HashSet<Bus> commons = new HashSet<Bus>();
+
         HashSet<Bus> fromBusListSet = new HashSet<Bus>(fromBusList);
         for (Bus toBus : toBusList)
         {
