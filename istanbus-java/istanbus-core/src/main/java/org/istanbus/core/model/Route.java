@@ -7,28 +7,28 @@ import java.util.List;
 
 public class Route
 {
-    private String[] fromStop;
-    private String[] toStop;
+    private Stop fromStop;
+    private Stop toStop;
     private Bus bus;
 
-    public String[] getToStop()
-    {
-        return toStop;
-    }
-
-    public void setToStop(String[] toStop)
-    {
-        this.toStop = toStop;
-    }
-
-    public String[] getFromStop()
+    public Stop getFromStop()
     {
         return fromStop;
     }
 
-    public void setFromStop(String[] fromStop)
+    public void setFromStop(Stop fromStop)
     {
         this.fromStop = fromStop;
+    }
+
+    public Stop getToStop()
+    {
+        return toStop;
+    }
+
+    public void setToStop(Stop toStop)
+    {
+        this.toStop = toStop;
     }
 
     public Bus getBus()

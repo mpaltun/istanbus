@@ -10,6 +10,7 @@ import org.istanbus.core.dao.mongo.StopMongoDAO;
 import org.istanbus.core.db.GraphDB;
 import org.istanbus.core.service.*;
 import org.istanbus.core.service.impl.*;
+import org.istanbus.core.util.MongoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +43,7 @@ public class CoreModule extends AbstractModule {
         bind(SearchIndexServiceImpl.class).in(Scopes.SINGLETON);
 
         bind(GraphDB.class).in(Scopes.SINGLETON);
+        bind(MongoFactory.class).in(Scopes.SINGLETON);
 
         // properties
         ArrayList<String> properties = new ArrayList<String>();

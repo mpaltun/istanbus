@@ -3,12 +3,14 @@ package org.istanbus.core.service.impl;
 import com.google.inject.Inject;
 import org.istanbus.core.dao.StopDAO;
 import org.istanbus.core.db.GraphDB;
+import org.istanbus.core.model.BusRequest;
 import org.istanbus.core.model.PathResult;
 import org.istanbus.core.model.Route;
 import org.istanbus.core.model.SuggestedRoute;
 import org.istanbus.core.model.node.Bus;
 import org.istanbus.core.model.node.Stop;
 import org.istanbus.core.service.PathFinderService;
+import org.istanbus.core.util.StopRequestCache;
 import org.neo4j.graphalgo.GraphAlgoFactory;
 import org.neo4j.graphalgo.PathFinder;
 import org.neo4j.graphdb.Direction;
@@ -23,9 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -58,47 +57,62 @@ public class PathFinderServiceImpl implements PathFinderService {
 
         logger.info("finding path from {} to {}", fromStopId, toStopId);
 
-        Stop fromStop = stopDAO.loadById(fromStopId);
-        Stop toStop = stopDAO.loadById(toStopId);
+        StopRequestCache cache = new StopRequestCache(stopDAO);
+
+        Stop fromStop = cache.loadById(fromStopId, true);
+        Stop toStop = cache.loadById(toStopId, true);
 
         List<Bus> fromBuses = fromStop.getBus();
         List<Bus> toBuses = toStop.getBus();
 
-        Set<Bus> commons = getCommonBuses(fromBuses, toBuses);
+        // clean bus lists
+        fromStop.setBus(null);
+        toStop.setBus(null);
+
+        Set<Bus> commonBusList = getCommonBuses(fromBuses, toBuses);
 
         List<SuggestedRoute> suggestedRoutes = new ArrayList<SuggestedRoute>();
+        // find shortest path for buses that passing through each stop
         for (Bus fromBus: fromBuses)
         {
             for (Bus toBus: toBuses)
             {
-                if (commons.contains(toBus) || commons.contains(fromBus))
+                if (commonBusList.contains(toBus) || commonBusList.contains(fromBus))
                 {
                     // ignore common routes
                     continue;
                 }
 
-                List<Route> routes = findForBus(fromBus.getId(), toBus.getId());
-                if (routes != null && !routes.isEmpty())
-                {
-                    Route firstRoute = routes.get(0);
-                    firstRoute.setFromStop(new String[] { fromStopId });
-
-                    // set last route destination
-                    Route lastRoute = routes.get(routes.size() - 1);
-                    lastRoute.setFromStop(routes.get(routes.size() - 2).getToStop());
-                    lastRoute.setToStop(new String[] { toStopId });
-
-                    SuggestedRoute suggestedRoute = new SuggestedRoute(routes);
-                    suggestedRoutes.add(suggestedRoute);
-                }
+                BusRequest request = new BusRequest(fromBus.getId(), toBus.getId(), cache);
+                List<Route> routes = findForBus(request);
+                handleRouteResults(fromStop, toStop, suggestedRoutes, routes);
             }
         }
 
         PathResult pathResult = new PathResult();
-        pathResult.setPerfectRoutes(commons);
         pathResult.setSuggestions(suggestedRoutes);
 
+        List<SuggestedRoute> perfectRoutes = getPerfectRoutes(fromStop, toStop, commonBusList);
+        pathResult.setPerfectRoutes(perfectRoutes);
+
         return pathResult.sort().limit();
+    }
+
+    private void handleRouteResults(Stop fromStop, Stop toStop, List<SuggestedRoute> suggestedRoutes, List<Route> routes)
+    {
+        if (routes != null && !routes.isEmpty())
+        {
+            Route firstRoute = routes.get(0);
+            firstRoute.setFromStop(fromStop);
+
+            // set last route destination
+            Route lastRoute = routes.get(routes.size() - 1);
+            lastRoute.setFromStop(routes.get(routes.size() - 2).getToStop());
+            lastRoute.setToStop(toStop);
+
+            SuggestedRoute suggestedRoute = new SuggestedRoute(routes);
+            suggestedRoutes.add(suggestedRoute);
+        }
     }
 
     private Set<Bus> getCommonBuses(List<Bus> fromBusList, List<Bus> toBusList)
@@ -116,33 +130,27 @@ public class PathFinderServiceImpl implements PathFinderService {
         return commons;
     }
 
-    private SuggestedRoute getSingleSuggestedRoute(Stop fromStop, Stop toStop, Bus toBus)
+    private List<SuggestedRoute> getPerfectRoutes(Stop fromStop, Stop toStop, Set<Bus> commonBusList)
     {
-        Route route = new Route();
-        route.setBus(toBus);
-
-        route.setToStop(new String[] { toStop.getId() });
-        route.setFromStop(new String[] { fromStop.getId() });
-
-        return new SuggestedRoute(Arrays.asList(route));
-    }
-
-    private List<String> getAsStringList(List<Bus> busList) {
-        List<String> stringList = new ArrayList<String>();
-        for (Bus bus : busList)
+        List<SuggestedRoute> perfectRoutes = new ArrayList<SuggestedRoute>();
+        for (Bus bus : commonBusList)
         {
-            stringList.add(bus.getId());
+            Route route = new Route();
+            route.setBus(bus);
+
+            SuggestedRoute suggestedRoute = new SuggestedRoute(route);
+            perfectRoutes.add(suggestedRoute);
         }
-        return stringList;
+        return perfectRoutes;
     }
 
-    private List<Route> findForBus(String fromBusId, String toBusId)
+    private List<Route> findForBus(BusRequest request)
     {
-        Node nodeA = busIndex.get("id", fromBusId).iterator().next();
-        Node nodeB = busIndex.get("id", toBusId).iterator().next();
+        Node nodeA = busIndex.get("id", request.getFromBusId()).iterator().next();
+        Node nodeB = busIndex.get("id", request.getToBusId()).iterator().next();
 
         Path path = finder.findSinglePath(nodeA, nodeB);
-        return getSolutionFromPath(path, fromBusId, toBusId);
+        return getSolutionFromPath(path, request);
     }
 
     private Bus getBusFromNode(Node node)
@@ -154,8 +162,11 @@ public class PathFinderServiceImpl implements PathFinderService {
         return bus;
     }
 
-    private List<Route> getSolutionFromPath(Path path, String fromBusId, String toBusId)
+    private List<Route> getSolutionFromPath(Path path, BusRequest request)
     {
+        String fromBusId = request.getFromBusId();
+        String toBusId = request.getToBusId();
+
         if (path == null) {
             logger.info("no bus path found. from {}, to {}", fromBusId, toBusId);
             return null;
@@ -189,14 +200,14 @@ public class PathFinderServiceImpl implements PathFinderService {
                 }
             }
 
-            Route firstRoute = getRouteFromBus(first, stops);
+            Route firstRoute = getRouteFromBus(first, stops, request.getStopDAO());
             if (previousRoute != null)
             {
                 firstRoute.setFromStop(previousRoute.getToStop());
             }
             result.add(firstRoute);
 
-            Route secondRoute = getRouteFromBus(second, stops);
+            Route secondRoute = getRouteFromBus(second, stops, request.getStopDAO());
             result.add(secondRoute);
 
             previousRoute = secondRoute;
@@ -207,11 +218,13 @@ public class PathFinderServiceImpl implements PathFinderService {
 
     }
 
-    private Route getRouteFromBus(Bus bus, String[] stops)
+    private Route getRouteFromBus(Bus bus, String[] stopIds, StopDAO stopDAO)
     {
         Route route = new Route();
         route.setBus(bus);
-        route.setToStop(stops);
+
+        Stop stop = stopDAO.loadById(stopIds[0]);
+        route.setToStop(stop);
 
         return route;
     }

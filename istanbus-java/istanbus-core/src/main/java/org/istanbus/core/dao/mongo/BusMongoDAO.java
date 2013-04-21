@@ -6,16 +6,14 @@ import com.google.gson.GsonBuilder;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
-import com.mongodb.MongoClient;
 import org.istanbus.core.dao.BusDAO;
 import org.istanbus.core.model.node.Bus;
+import org.istanbus.core.util.MongoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,26 +21,20 @@ public class BusMongoDAO implements BusDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(BusMongoDAO.class);
 
-    private String dbName;
+    private String collectionName;
+    private MongoFactory mongoFactory;
 
     @Inject
-    public BusMongoDAO(@Named("mongo.db") String dbName) {
-        this.dbName = dbName;
+    public BusMongoDAO(@Named("mongo.db.bus") String stopCollection, MongoFactory mongoFactory) {
+        this.collectionName = stopCollection;
+        this.mongoFactory = mongoFactory;
     }
 
     @Override
     public List<Bus> loadAll() {
         List<Bus> result = new ArrayList<Bus>();
-        MongoClient mongoClient = null;
-        try {
-            mongoClient = new MongoClient();
-        } catch (UnknownHostException e) {
-            logger.error("", e);
-            return result;
-        }
 
-        DB db = mongoClient.getDB(dbName);
-        DBCollection collection = db.getCollection("bus");
+        DBCollection collection = mongoFactory.loadCollection(collectionName);
 
         BasicDBObject query = new BasicDBObject();
 

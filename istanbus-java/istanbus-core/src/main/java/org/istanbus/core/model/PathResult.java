@@ -9,7 +9,7 @@ import java.util.Set;
 
 public class PathResult
 {
-    private Set<Bus> perfectRoutes;
+    private List<SuggestedRoute> perfectRoutes;
     private List<SuggestedRoute> suggestions;
 
     private static final int DEFAULT_LIMIT = 5;
@@ -22,12 +22,12 @@ public class PathResult
         }
     };
 
-    public Set<Bus> getPerfectRoutes()
+    public List<SuggestedRoute> getPerfectRoutes()
     {
         return perfectRoutes;
     }
 
-    public void setPerfectRoutes(Set<Bus> perfectRoutes)
+    public void setPerfectRoutes(List<SuggestedRoute> perfectRoutes)
     {
         this.perfectRoutes = perfectRoutes;
     }

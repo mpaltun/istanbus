@@ -9,4 +9,6 @@ public interface StopDAO
     List<Stop> loadAll();
 
     Stop loadById(String id);
+
+    Stop loadById(String id, boolean loadBus);
 }

@@ -6,17 +6,14 @@ import com.google.gson.GsonBuilder;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
-import com.mongodb.MongoClient;
 import org.istanbus.core.dao.StopDAO;
-import org.istanbus.core.model.node.Bus;
 import org.istanbus.core.model.node.Stop;
+import org.istanbus.core.util.MongoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,18 +25,20 @@ public class StopMongoDAO implements StopDAO
 {
     private static final Logger logger = LoggerFactory.getLogger(StopMongoDAO.class);
 
-    private String dbName;
+    private String collectionName;
+    private MongoFactory mongoFactory;
 
     @Inject
-    public StopMongoDAO(@Named("mongo.db") String dbName) {
-        this.dbName = dbName;
+    public StopMongoDAO(@Named("mongo.db.stop") String busCollection, MongoFactory mongoFactory) {
+        this.collectionName = busCollection;
+        this.mongoFactory = mongoFactory;
     }
 
     @Override
     public List<Stop> loadAll() {
         List<Stop> result = new ArrayList<Stop>();
 
-        DBCollection collection = getCollection();
+        DBCollection collection = mongoFactory.loadCollection(collectionName);
 
         BasicDBObject query = new BasicDBObject();
 
@@ -62,26 +61,28 @@ public class StopMongoDAO implements StopDAO
 
     }
 
-    private DBCollection getCollection()
-    {
-        MongoClient mongoClient = null;
-        try
-        {
-            mongoClient = new MongoClient();
-        } catch (UnknownHostException e)
-        {
-            logger.error("", e);
-        }
-
-        DB db = mongoClient.getDB(dbName);
-        return db.getCollection("stop");
-    }
-
     @Override
     public Stop loadById(String id)
     {
-        DBCollection collection = getCollection();
-        DBCursor cursor = collection.find(new BasicDBObject("id", id));
+        return loadById(id, false);
+    }
+
+    @Override
+    public Stop loadById(String id, boolean loadBus)
+    {
+        DBCollection collection = mongoFactory.loadCollection(collectionName);
+        BasicDBObject query = new BasicDBObject("id", id);
+
+        BasicDBObject fields = new BasicDBObject();
+        fields.put("_id", 0);
+        fields.put("id", 1);
+        fields.put("name", 1);
+        if (loadBus)
+        {
+            fields.put("bus", 1);
+        }
+
+        DBCursor cursor = collection.find(query, fields);
 
         if (cursor.hasNext())
         {
