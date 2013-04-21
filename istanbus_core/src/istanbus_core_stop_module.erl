@@ -3,7 +3,7 @@
 -export([load_by_id/1, search/1, find_closest/2]).
 
 load_by_id(StopId)  ->
-    Stop = get_first(emongo:find_one(pool_mongo, "stop", [{"id", StopId}], [{fieldsnoid, ["id", "name", "location", "bus"]}])),
+    Stop = mongo_utils:get_first(emongo:find_one(pool_mongo, "stop", [{"id", StopId}], [{fieldsnoid, ["id", "name", "location", "bus"]}])),
     Stop.
     
 
@@ -17,12 +17,6 @@ find_closest(Lat, Lon) ->
     emongo:find(pool_mongo, "stop", Query , [{limit, 5}, {fieldsnoid, Fields}]).
 
 % internal api
-get_first([H | _]) ->
-    H;
-get_first([]) ->
-    [].
-
-
 prepare_query([], Queries) ->
     Queries;
 
