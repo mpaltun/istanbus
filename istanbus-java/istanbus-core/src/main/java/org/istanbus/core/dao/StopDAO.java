@@ -2,7 +2,13 @@ package org.istanbus.core.dao;
 
 import org.istanbus.core.model.node.Stop;
 
+import java.util.List;
+
 public interface StopDAO
 {
-    Stop loadByCode(String code);
+    List<Stop> loadAll();
+
+    Stop loadById(String id);
+
+    Stop loadById(String id, boolean loadBus);
 }

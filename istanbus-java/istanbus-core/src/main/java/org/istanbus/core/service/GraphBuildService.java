@@ -4,6 +4,6 @@ public interface GraphBuildService
 {
     void buildFullGraph();
 
-    boolean testGraph(String stopCode);
+    boolean testGraph(String busCode);
 
 }

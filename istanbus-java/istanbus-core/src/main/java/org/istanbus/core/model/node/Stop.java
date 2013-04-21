@@ -1,10 +1,13 @@
 package org.istanbus.core.model.node;
 
+import java.util.List;
+
 public class Stop {
 
     private String id;
     private String name;
     private String district;
+    private List<Bus> bus;
 
     public Stop(String id, String name) {
         this.id = id;
@@ -38,13 +41,25 @@ public class Stop {
         this.district = district;
     }
 
+    public List<Bus> getBus()
+    {
+        return bus;
+    }
+
+    public void setBus(List<Bus> bus)
+    {
+        this.bus = bus;
+    }
+
     @Override
-    public String toString() {
+    public String toString()
+    {
         final StringBuilder sb = new StringBuilder();
         sb.append("Stop");
         sb.append("{id='").append(id).append('\'');
         sb.append(", name='").append(name).append('\'');
         sb.append(", district='").append(district).append('\'');
+        sb.append(", bus=").append(bus);
         sb.append('}');
         return sb.toString();
     }

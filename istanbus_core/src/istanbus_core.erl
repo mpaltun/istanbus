@@ -28,6 +28,7 @@ start() ->
     ensure_started(crypto),
     ensure_started(emongo),
     emongo:add_pool(pool_mongo, "localhost", 27017, "istanbus_2013-01-06", 5),
+    emongo:ensure_index(pool_mongo, "suggestions", [{"from", 1}, {"to", 1}]),
     application:start(istanbus_core).
 
 %% @spec stop() -> ok
