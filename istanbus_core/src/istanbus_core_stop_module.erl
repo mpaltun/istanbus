@@ -13,7 +13,7 @@ search(Keywords)     ->
 
 find_closest(Lat, Lon) ->
     Query = [{"location", [{near, [Lat, Lon]}]}],
-    Fields =  ["id", "name", location],
+    Fields =  ["id", "name", "district", "location"],
     emongo:find(pool_mongo, "stop", Query , [{limit, 5}, {fieldsnoid, Fields}]).
 
 % internal api
