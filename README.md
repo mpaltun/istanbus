@@ -33,6 +33,7 @@ GET /place/stop/{keyword}
 ### Path Finding
 ```
 GET /path/from/{stop_id}/to/{stop_id}
+GET /path/from/lat/{from_latitude}/lon/{from_longitude}/to/lat/{to_latitude}/lon/{to_longitude}
 ```
 
 
