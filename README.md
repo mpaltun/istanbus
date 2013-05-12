@@ -26,6 +26,7 @@ GET /stop/{id}
 ```
 GET /search/bus/{id or keyword}
 GET /search/stop/{keyword}
+GET /place/stop/{keyword}
 ```
 
 
@@ -38,4 +39,9 @@ GET /path/from/{stop_id}/to/{stop_id}
 ### Closest stops
 ```
 GET /closest/lat/{latitude}/lon/{longitude}
+```
+
+### Places
+```
+GET /place/{id}
 ```
